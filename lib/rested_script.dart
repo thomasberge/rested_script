@@ -22,6 +22,12 @@ class RestedScriptArguments {
   void setDirectoryPath(String path) {
     StringTools cursor = new StringTools(path);
     while (cursor.moveTo("/")) {}
+    cursor.move();
+    cursor.startSelection();
+    cursor.moveToEnd();
+    cursor.stopSelection();
+    cursor.deleteSelection();
+    print("directoryPath=" + cursor.data);
   }
 
   void setBool(String key, bool value) {
