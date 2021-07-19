@@ -65,9 +65,9 @@ class CodeBlock {
 }
 
 class RestedScript {
-  RestedScript(this.rootDirectory);
+  RestedScript();
 
-  String rootDirectory;
+  String rootDirectory = "";
 
   String flag = "";
 
