@@ -21,7 +21,10 @@ class RestedScriptArguments {
 
   void setDirectoryPath(String path) {
     StringTools cursor = new StringTools(path);
-    while (cursor.moveTo("/")) {}
+    bool run = cursor.contains("/");
+    while (run) {
+      run = cursor.moveTo("/");
+    }
     cursor.move();
     cursor.startSelection();
     cursor.moveToEnd();
