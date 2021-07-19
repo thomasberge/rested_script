@@ -21,7 +21,7 @@ class RestedScriptArguments {
 
   void setDirectoryPath(String path) {
     StringTools cursor = new StringTools(path);
-    while (cursor.MoveTo("/")) {}
+    while (cursor.moveTo("/")) {}
   }
 
   void setBool(String key, bool value) {
