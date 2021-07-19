@@ -161,11 +161,11 @@ class RestedScript {
     print("filepath=" + filepath);
     if (filepath != "") {
       try {
-        File data = new File(rootDirectory + filepath);
+        File data = new File(filepath);
         List<String> lines = data.readAsLinesSync(encoding: utf8);
         return (await processLines(lines, args));
       } on FileSystemException {
-        print("Error reading " + rootDirectory + filepath);
+        print("Error reading " + filepath);
         return ("");
       }
     } else if (externalfile != null) {
