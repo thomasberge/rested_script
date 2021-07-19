@@ -158,6 +158,7 @@ class RestedScript {
 
   Future<String> parse(String filepath, RestedScriptArguments args,
       {String? externalfile = null}) async {
+    print("filepath=" + filepath);
     if (filepath != "") {
       try {
         File data = new File(rootDirectory + filepath);
