@@ -10,14 +10,19 @@ import 'dart:math';
 import 'package:string_tools/string_tools.dart';
 
 class RestedScriptArguments {
+  String directoryPath = "";
   List<dynamic> list = [];
   Map<dynamic, dynamic> map = new Map();
 
   Map args = new Map<String, dynamic>();
-
   Map setmap = new Map<String, String>();
   Map stringmap = new Map<String, String>();
   Map boolmap = new Map<String, bool>();
+
+  void setDirectoryPath(String path) {
+    StringTools cursor = new StringTools(path);
+    while (cursor.MoveTo("/")) {}
+  }
 
   void setBool(String key, bool value) {
     boolmap[key] = value;
