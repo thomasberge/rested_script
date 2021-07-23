@@ -126,14 +126,14 @@ class RestedScript {
   Future<String> parse(String filepath, RestedScriptArguments args,
       {String? externalfile = null}) async {
     args.setDirectoryPath(filepath);
-    print("filepath=" + filepath);
+    //print("filepath=" + filepath);
     if (filepath != "") {
       try {
-        File data = new File(filepath);
+        File data = new File(rootDirectory + filepath);
         List<String> lines = data.readAsLinesSync(encoding: utf8);
         return (await processLines(lines, args));
       } on FileSystemException {
-        print("Error reading " + filepath);
+        print("Error reading " + rootDirectory + filepath);
         return ("");
       }
     } else if (externalfile != null) {

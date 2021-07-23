@@ -17,7 +17,8 @@ class RestedScriptArguments {
       run = cursor.moveTo("/");
     }
     cursor.deleteAllFromPosition();
-    print("directoryPath=" + cursor.data);
+    //print("path=" + path);
+    //print("directoryPath=" + cursor.data);
   }
 
   void setBool(String key, bool value) {
