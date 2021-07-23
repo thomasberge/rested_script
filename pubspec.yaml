@@ -1,7 +1,7 @@
 name: rested_script
 version: 0.1.0
 description: >-
-  A simple scripting made for the Rested Web Framework.
+  A simple scripting language made for the Rested Web Framework.
 environment:
   sdk: '>=2.12.0 <3.0.0'
 dependencies:
