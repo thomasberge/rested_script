@@ -116,17 +116,20 @@ class RestedScript {
   Future<String> createDocument(
       String filepath, RestedScriptArguments args) async {
     flag = "";
-    String doc = await parse(filepath, args);
+    String doc = await parse(filepath, args: args);
     if (flag != "") {
-      doc = await parse("bin/resources/flagsites/" + flag, args);
+      doc = await parse("bin/resources/flagsites/" + flag, args: args);
     }
     return doc;
   }
 
-  Future<String> parse(String filepath, RestedScriptArguments args,
-      {String? externalfile = null}) async {
-    args.setDirectoryPath(filepath);
+  Future<String> parse(String filepath,
+      {RestedScriptArguments? args = null, String? externalfile = null}) async {
+    //args.setDirectoryPath(filepath);
     //print("filepath=" + filepath);
+    if (args == null) {
+      args = new RestedScriptArguments();
+    }
     if (filepath != "") {
       try {
         File data = new File(rootDirectory + filepath);
@@ -263,7 +266,7 @@ class RestedScript {
   Future<String> f_include(String argument, RestedScriptArguments args) async {
     if (argument.substring(0, 4) == "http") {
       String result = await io.downloadTextFile(argument);
-      return (await parse("", args, externalfile: result));
+      return (await parse("", args: args, externalfile: result));
     } else {
       argument = argument.replaceAll('"', '');
       List<String> split = argument.split('.');
@@ -271,7 +274,7 @@ class RestedScript {
         String filetype = argument.split('.')[1];
 
         if (filetype == 'html' || filetype == 'css') {
-          return (await parse(argument, args));
+          return (await parse(argument, args: args));
         } else {
           print("RestedScript: Unsupported include filetype for " +
               argument.toString());
