@@ -7,7 +7,21 @@
 - [ ] Test of print in test file + documentation in README.md
 - [ ] Update readme to better standards
 
-Testing
+##### How it works
+RestedScript is pretty simple to set up. You instantiate a RestedScript object and set its root directory.
+
+```dart
+RestedScript rscript = RestedScript(root: "/app/bin/resources/");
+```
+
+You can then - relative to its root directory, pass it file paths to text file containing RestedScript. RestedScript will then parse the file and process any RestedScript. Rested script start with <?rs and end with ?>, just like php. It also doesn't care about the syntax outside of the start/end tags, so it can be used in any text file. You can have start/end time appear many times within the same document. It can also be multiline, as whitespace does not matter.
+
+##### Language
+
+>include("index.html");
+Test
+
+##### #Testing
 There is a test script included in /test that runs all functions in different variations and tests against the result. A report is written to console where each function is graded with a OK or Failed. If changes are made to rested_script then new functions should be added and all functions tested again to make sure they pass.
 
 The accompanying Dockerfile in this repo root can be run in order to run the test.
