@@ -1,13 +1,13 @@
 # RestedScript v0.2.0
 
-## Currently being organized, restructured and changed. Nothing to see here yet, move along.
+### Currently being organized, restructured and changed. Nothing to see here yet, move along.
 
-##### v0.2.0 to-do
+### v0.2.0 to-do
 - [ ] Test of include in test file + documentation in README.md
 - [ ] Test of print in test file + documentation in README.md
 - [ ] Update readme to better standards
 
-##### How it works
+### How it works
 RestedScript is pretty simple to set up. You instantiate a RestedScript object and set its root directory.
 
 ```dart
