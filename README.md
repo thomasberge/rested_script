@@ -30,7 +30,7 @@ This immediately parse and process the included file and include the result.
 
 The passed string argument to print() will be written in the document.
 
-##### #Testing
+#### Testing
 There is a test script included in /test that runs all functions in different variations and tests against the result. A report is written to console where each function is graded with a OK or Failed. If changes are made to rested_script then new functions should be added and all functions tested again to make sure they pass.
 
 The accompanying Dockerfile in this repo root can be run in order to run the test.
