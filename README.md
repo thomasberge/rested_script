@@ -3,9 +3,10 @@
 ### Currently being organized, restructured and changed. Nothing to see here yet, move along.
 
 ### v0.2.0 to-do
-- [ ] Test of include in test file + documentation in README.md
-- [ ] Test of print in test file + documentation in README.md
-- [ ] Update readme to better standards
+- [x] Test of include in test file + documentation in README.md
+- [x] Test of download in test file + documentation in README.md
+- [x] Test of print in test file + documentation in README.md
+- [x] Update readme to better standards
 
 ### How it works
 RestedScript is pretty simple to set up. You instantiate a RestedScript object and set its root directory.
@@ -23,6 +24,12 @@ You can then - relative to its root directory, pass it file paths to text file c
 ```include("index.html");```
 
 This immediately parse and process the included file and include the result.
+
+#### download("");
+
+```download("https://raw.githubusercontent.com/thomasberge/rested_script/dev/test/pages/include.html");```
+
+Downloads and includes the text in the URL. If the file contains RestedScript it will be processed just like a standard include() function.
 
 #### print("");
 
