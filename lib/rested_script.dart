@@ -223,6 +223,8 @@ class RestedScript {
               data = data + f_set(scriptargument, args);
             } else if (scriptfunction == "args") {
               data = data + f_args(scriptargument, args);
+            } else if (scriptfunction == "download") {
+              data = data + await f_download(scriptargument, args);              
             } else if (scriptfunction == "debug") {
               f_debug(scriptargument, args);
             }
@@ -266,28 +268,34 @@ class RestedScript {
   /// include("scripts.html");
 
   Future<String> f_include(String argument, RestedScriptArguments args) async {
-    if (argument.substring(0, 4) == "http") {
-      String result = await io.downloadTextFile(argument);
-      return (await parse("", args: args, externalfile: result));
-    } else {
-      argument = argument.replaceAll('"', '');
-      List<String> split = argument.split('.');
-      if (split.length > 1) {
-        String filetype = argument.split('.')[1];
+    argument = argument.replaceAll('"', '');
+    List<String> split = argument.split('.');
+    if (split.length > 1) {
+      String filetype = argument.split('.')[argument.split('.').length-1];
 
-        if (filetype == 'html' || filetype == 'css') {
-          return (await parse(argument, args: args));
-        } else {
-          print("RestedScript: Unsupported include filetype for " +
-              argument.toString());
-          return "";
-        }
+      if (filetype == 'html' || filetype == 'css' || filetype == 'txt') {
+        return (await parse(argument, args: args));
       } else {
-        print("RestedScript: Attempted to include file with no filetype: " +
+        print("RestedScript: Unsupported include filetype for " +
             argument.toString());
         return "";
       }
+    } else {
+      print("RestedScript: Attempted to include file with no filetype: " +
+          argument.toString());
+      return "";
     }
+  }
+
+  /// RestedScript function: download
+  /// Downloads the file and inserts the text at the position of the command.
+  ///
+  /// Example:
+  /// download("http://github.com/thomasberge/rested_script/test/pages/include.html");
+
+  Future<String> f_download(String argument, RestedScriptArguments args) async {
+    String result = await io.downloadTextFile(argument);
+    return (await parse("", args: args, externalfile: result));
   }
 
   String f_flag(String argument, RestedScriptArguments args) {

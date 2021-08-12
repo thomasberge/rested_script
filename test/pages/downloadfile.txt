@@ -1,1 +1,1 @@
-iamtheweb
+123<?rs download("https://raw.githubusercontent.com/thomasberge/rested_script/dev/test/pages/include.html"); ?>7890
