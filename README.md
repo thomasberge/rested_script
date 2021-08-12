@@ -19,9 +19,11 @@ You can then - relative to its root directory, pass it file paths to text file c
 ##### Language
 
 ```include("index.html");```
+
 This immediately parse and process the included file and include the result.
 
 ```print("This line will be written in the document.");```
+
 The passed string argument to print() will be written in the document.
 
 ##### #Testing
