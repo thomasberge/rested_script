@@ -32,7 +32,9 @@ class CodeBlock {
 }
 
 class RestedScript {
-  RestedScript();
+  RestedScript({String root = ""}) {
+    rootDirectory = root;
+  }
 
   String rootDirectory = "";
 
