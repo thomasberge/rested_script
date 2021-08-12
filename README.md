@@ -16,11 +16,15 @@ RestedScript rscript = RestedScript(root: "/app/bin/resources/");
 
 You can then - relative to its root directory, pass it file paths to text file containing RestedScript. RestedScript will then parse the file and process any RestedScript. Rested script start with <?rs and end with ?>, just like php. It also doesn't care about the syntax outside of the start/end tags, so it can be used in any text file. You can have start/end time appear many times within the same document. It can also be multiline, as whitespace does not matter.
 
-##### Language
+### Language
+
+####include("");
 
 ```include("index.html");```
 
 This immediately parse and process the included file and include the result.
+
+####print("");
 
 ```print("This line will be written in the document.");```
 
