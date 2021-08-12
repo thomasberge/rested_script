@@ -9,7 +9,10 @@
 - [x] Update readme to better standards
 
 ### How it works
-RestedScript is pretty simple to set up. You instantiate a RestedScript object and set its root directory.
+
+Rested Script is quite simple; you pass it a filepath and you receive a string. The string represents the text content of the file in the filepath, except that the RestedScript in the file has been processed.
+
+It is simple to set up. You instantiate a RestedScript object and set its root directory.
 
 ```dart
 RestedScript rscript = RestedScript(root: "/app/bin/resources/");
