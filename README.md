@@ -24,12 +24,16 @@ You can then - relative to its root directory, pass it file paths to text file c
 #### include("");
 This immediately parse and process the included file and include the result.
 
-```include("index.html");```
+```
+include("index.html");
+```
 
 #### download("");
 Downloads and includes the text in the URL. If the file contains RestedScript it will be processed just like a standard include() function.
 
-```download("https://raw.githubusercontent.com/thomasberge/rested_script/dev/test/pages/include.html");```
+```
+download("https://raw.githubusercontent.com/thomasberge/rested_script/dev/test/pages/include.html");
+```
 
 #### print(""); / echo("");
 The passed string argument to print() will be written in the document. Also supports echo() for the exact same result.
