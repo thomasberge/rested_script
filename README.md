@@ -34,8 +34,10 @@ Downloads and includes the text in the URL. If the file contains RestedScript it
 #### print(""); / echo("");
 The passed string argument to print() will be written in the document. Also supports echo() for the exact same result.
 
-```print("This line will be written in the document.");
-echo("This line will also be written in the document.");```
+```
+print("This line will be written in the document.");
+echo("This line will also be written in the document.");
+```
 
 ### Testing
 There is a test script included in /test that runs all functions in different variations and tests against the result. A report is written to console where each function is graded with a OK or Failed. If changes are made to rested_script then new functions should be added and all functions tested again to make sure they pass.
