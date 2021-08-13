@@ -1,12 +1,11 @@
-# RestedScript v0.2.0
+# RestedScript v0.3.0
 
 ### Currently being organized, restructured and changed. Nothing to see here yet, move along.
 
-### v0.2.0 to-do
-- [x] Test of include in test file + documentation in README.md
-- [x] Test of download in test file + documentation in README.md
-- [x] Test of print in test file + documentation in README.md
-- [x] Update readme to better standards
+### v0.3.0 to-do
+- [ ] Finish flag function so that if flag is called from any file it will override the document createDocument returns with the corresponding flagsite.
+- [ ] Test of flag in test file + documentation in README.md.
+- [ ] Move flag, print, include and download to functions.dart.
 
 ### How it works
 
@@ -23,22 +22,19 @@ You can then - relative to its root directory, pass it file paths to text file c
 ### Language
 
 #### include("");
+This immediately parse and process the included file and include the result.
 
 ```include("index.html");```
 
-This immediately parse and process the included file and include the result.
-
 #### download("");
+Downloads and includes the text in the URL. If the file contains RestedScript it will be processed just like a standard include() function.
 
 ```download("https://raw.githubusercontent.com/thomasberge/rested_script/dev/test/pages/include.html");```
 
-Downloads and includes the text in the URL. If the file contains RestedScript it will be processed just like a standard include() function.
-
 #### print("");
+The passed string argument to print() will be written in the document.
 
 ```print("This line will be written in the document.");```
-
-The passed string argument to print() will be written in the document.
 
 ### Testing
 There is a test script included in /test that runs all functions in different variations and tests against the result. A report is written to console where each function is graded with a OK or Failed. If changes are made to rested_script then new functions should be added and all functions tested again to make sure they pass.
