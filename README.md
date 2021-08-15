@@ -21,26 +21,33 @@ You can then - relative to its root directory, pass it file paths to text file c
 
 ### Language
 
-#### include("");
+#### include(string);
 This immediately parse and process the included file and include the result.
 
 ```
 include("index.html");
 ```
 
-#### download("");
+#### download(string);
 Downloads and includes the text in the URL. If the file contains RestedScript it will be processed just like a standard include() function.
 
 ```
 download("https://raw.githubusercontent.com/thomasberge/rested_script/dev/test/pages/include.html");
 ```
 
-#### print(""); / echo("");
+#### print(string); / echo(string);
 The passed string argument to print() will be written in the document. Also supports echo() for the exact same result.
 
 ```
 print("This line will be written in the document.");
 echo("This line will also be written in the document.");
+```
+
+#### flag(string);
+If the flag site is called at any point in the code then the page referred to will be displayed no matter what the code contains. The code will however continue to execute, but it will not render to the user. The argument needs to point to a specific file in <root>/flagsites/.
+
+```
+download("404.html");
 ```
 
 ### Testing
