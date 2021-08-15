@@ -3,9 +3,9 @@
 ### Currently being organized, restructured and changed. Nothing to see here yet, move along.
 
 ### v0.3.0 to-do
-- [ ] Finish flag function so that if flag is called from any file it will override the document createDocument returns with the corresponding flagsite.
-- [ ] Test of flag in test file + documentation in README.md.
-- [ ] Move flag, print, include and download to functions.dart.
+- [x] Finish flag function so that if flag is called from any file it will override the document createDocument returns with the corresponding flagsite.
+- [x] Test of flag in test file + documentation in README.md.
+- [x] Move flag, print, include and download to functions.dart.
 
 ### How it works
 
