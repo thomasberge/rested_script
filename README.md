@@ -9,17 +9,20 @@
 
 ### How it works
 
-Rested Script is quite simple; you pass it a filepath and you receive a string. The string represents the text content of the file in the filepath, except that the RestedScript in the file has been processed.
+The RestedScript engine is quite simple; you pass it a filepath and you receive a string. The string represents the text content of the file in the filepath, except the RestedScript in the file has been processed.
 
-It is simple to set up. You instantiate a RestedScript object and set its root directory.
+It is simple to set up. You instantiate a RestedScript object and set its root directory. You can then - relative to its root directory, pass it file paths to text file containing RestedScript.
 
 ```dart
 RestedScript rscript = RestedScript(root: "/app/bin/resources/");
 ```
 
-You can then - relative to its root directory, pass it file paths to text file containing RestedScript. RestedScript will then parse the file and process any RestedScript. Rested script start with <?rs and end with ?>, just like php. It also doesn't care about the syntax outside of the start/end tags, so it can be used in any text file. You can have start/end time appear many times within the same document. It can also be multiline, as whitespace does not matter.
+RestedScript comes in two flavors; a nested language for logical operations and a series of specific document manipulation verbs. The language needs to be expressed within the ```<?rs``` start and ```?>``` end tags within the document. Start and end tags can appear many times within a document, but each start must always be closed with an end tag. Whitespace within the tags are ignored.
 
-### Language
+Document manipulation verbs live outside of the language tags and are themselves tagged within double curly brakcets ```{{as such}}```. The document type does not matter as long as it is (or can be read as) UTF-8.
+
+
+### RestedScript Language Functions
 
 #### include(string);
 This immediately parse and process the included file and include the result.
@@ -50,6 +53,18 @@ If the flag site is called at any point in the code then the page referred to wi
 download("404.html");
 ```
 
+  
+### RestedScript Document Manipulation Verbs
+
+  
+#### {{content("id")}}
+Some verbs require a target location within the document. These will look for content tags. You can have many content tags within a document as long as their id is unique. Content tags are always referenced by their id and must be unique. Not just within the document itself but within the entire DOM. 
+
+  
+#### {{wrap("/some/file.txt", "someId")}}
+Will open the file.txt, find the contentId someId tag within the document. The current DOM will be wrapped with whatever is before and after the contentId.
+
+  
 ### Testing
 There is a test script included in /test that runs all functions in different variations and tests against the result. A report is written to console where each function is graded with a OK or Failed. If changes are made to rested_script then new functions should be added and all functions tested again to make sure they pass.
 
