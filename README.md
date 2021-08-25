@@ -1,4 +1,4 @@
-# RestedScript v0.4.0
+# RestedScript v0.3.0
 
 ### Currently being organized, restructured and changed. Nothing to see here yet, move along.
 
