@@ -22,6 +22,11 @@ RestedScript comes in two flavors; a nested language for logical operations and 
 Document manipulation verbs live outside of the language tags and are themselves tagged within double curly brakcets ```{{as such}}```. The document type does not matter as long as it is (or can be read as) UTF-8.
 
 
+### Execution, Memory and the Document Object
+
+RestedScript is a process that starts execution based on an input file. As soon as it starts reading the file a Document Object is created containing the content of the initial document. More data can be added through processing or read as input from local or external data. Any data stored as arguments either at start of execution (passed as an Argument Object) or saved as variables throughout execution lives until there is no more data to read or execute. The resulting string will be returned from the starting function and the Document Object will suffer the wrath of the Dart garbage collector.
+
+
 ### RestedScript Language Functions
 
 #### include(string);
@@ -58,11 +63,11 @@ download("404.html");
 
   
 #### {{content("id")}}
-Some verbs require a target location within the document. These will look for content tags. You can have many content tags within a document as long as their id is unique. Content tags are always referenced by their id and must be unique. Not just within the document itself but within the entire DOM. 
+Some verbs require a target location within the document. These will look for content tags. You can have many content tags within a document as long as their id is unique. Content tags are always referenced by their id and must be unique. Not just within the document itself but within the entire Document Object. 
 
   
 #### {{wrap("/some/file.txt", "someId")}}
-Will open the file.txt, find the contentId someId tag within the document. The current DOM will be wrapped with whatever is before and after the contentId.
+Will open the file.txt, find the contentId someId tag within the document. The current Document Object will be wrapped with whatever is before and after the contentId.
 
   
 ### Testing
