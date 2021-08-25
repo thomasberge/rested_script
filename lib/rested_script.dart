@@ -119,6 +119,55 @@ class RestedScript {
     return doc;
   }
 
+  Future<String> wrapDocument(String data) async {
+    StringTools cursor = new StringTools(data);
+
+    // Gets both arguments (file and content id) and deletes the wrap function call from
+    // the document.
+    if(cursor.moveTo('{{wrap("')) {
+      cursor.deleteCharacters('{{wrap("'.length);
+      cursor.startSelection();
+      cursor.moveTo('")}}');
+      cursor.stopSelection();
+      String wrapArgs = cursor.getSelection();
+      cursor.deleteCharacters('")}}'.length);
+      cursor.deleteSelection();
+      data = cursor.data;
+
+      StringTools argsCursor = StringTools(wrapArgs);
+      if(argsCursor.moveTo('"')) {
+        argsCursor.startSelection();
+
+        if(argsCursor.moveToNext('"')) {
+          argsCursor.move();
+          argsCursor.stopSelection();
+          int separatorLength = argsCursor.getSelection().length;
+          argsCursor.deleteSelection();
+          argsCursor.move(characters: -separatorLength);
+          String fileRef = argsCursor.getAllBeforePosition();
+          String contentId = argsCursor.getAllFromPosition();
+
+          String fileData = await File(rootDirectory + fileRef).readAsString();
+          if(fileData.contains('{{content("' + contentId + '")}}')) {
+            List<String> fileDataSplit = fileData.split('{{content("' + contentId + '")}}');
+            if(fileDataSplit.length == 2) {
+              data = fileDataSplit[0] + data + fileDataSplit[1];
+            } else {
+              print('ERROR More than one contentId "' + contentId + '" in ' + rootDirectory + fileRef);
+            }
+          } else {
+            print('ERROR Unable to locate contentId reference "' + contentId + '" in ' + rootDirectory + fileRef);
+          }
+        } else {
+          print("ERROR Cannot parsing wrap() arguments: " + argsCursor.data + "\r\nwrap(string Filepath, string ContentId);");          
+        }
+      } else {
+        print("Error parsing wrap() arguments: " + argsCursor.data + "\r\nwrap(string Filepath, string ContentId);");
+      }
+    }
+    return data;
+  }
+
   Future<String> parse(String filepath,
       {RestedScriptArguments? args = null, String? externalfile = null}) async {
     if (args == null) {
@@ -360,6 +409,7 @@ class RestedScript {
   Future<String> processLines(
       List<String> lines, RestedScriptArguments args) async {
     String document = removeComments(lines);
+    document = await wrapDocument(document);
     List<String> rs_blocks = [];
     StringTools dparser = new StringTools(document);
     bool run = true;
