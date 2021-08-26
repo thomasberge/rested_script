@@ -14,6 +14,13 @@ import 'src/functions.dart' as functions;
 import 'src/arguments.dart';
 export 'src/arguments.dart';
 
+bool debugEnabled = false;
+void debug(String message) {
+  if(debugEnabled) {
+    print(message);
+  }
+}
+
 class CodeBlock {
   int id;
   String data;
@@ -26,11 +33,11 @@ class CodeBlock {
 }
 
 class RestedScript {
-  RestedScript({String root = ""}) {
-    rootDirectory = root;
+  RestedScript({this.root = "", bool debug = false}) {
+    debugEnabled = debug;
   }
 
-  String rootDirectory = "";
+  String root;
 
   String flag = "";
 
@@ -120,6 +127,7 @@ class RestedScript {
   }
 
   Future<String> wrapDocument(String data) async {
+    debug("wrapDocument()");
     StringTools cursor = new StringTools(data);
 
     // Gets both arguments (file and content id) and deletes the wrap function call from
@@ -147,16 +155,16 @@ class RestedScript {
           String fileRef = argsCursor.getAllBeforePosition();
           String contentId = argsCursor.getAllFromPosition();
 
-          String fileData = await File(rootDirectory + fileRef).readAsString();
+          String fileData = await File(root + fileRef).readAsString();
           if(fileData.contains('{{content("' + contentId + '")}}')) {
             List<String> fileDataSplit = fileData.split('{{content("' + contentId + '")}}');
             if(fileDataSplit.length == 2) {
               data = fileDataSplit[0] + data + fileDataSplit[1];
             } else {
-              print('ERROR More than one contentId "' + contentId + '" in ' + rootDirectory + fileRef);
+              print('ERROR More than one contentId "' + contentId + '" in ' + root + fileRef);
             }
           } else {
-            print('ERROR Unable to locate contentId reference "' + contentId + '" in ' + rootDirectory + fileRef);
+            print('ERROR Unable to locate contentId reference "' + contentId + '" in ' + root + fileRef);
           }
         } else {
           print("ERROR Cannot parsing wrap() arguments: " + argsCursor.data + "\r\nwrap(string Filepath, string ContentId);");          
@@ -170,16 +178,17 @@ class RestedScript {
 
   Future<String> parse(String filepath,
       {RestedScriptArguments? args = null, String? externalfile = null}) async {
+        debug("parse()()");
     if (args == null) {
       args = new RestedScriptArguments();
     }
     if (filepath != "") {
       try {
-        File data = new File(rootDirectory + filepath);
+        File data = new File(root + filepath);
         List<String> lines = data.readAsLinesSync(encoding: utf8);
         return (await processLines(lines, args));
       } on FileSystemException {
-        print("Error reading " + rootDirectory + filepath);
+        print("Error reading " + root + filepath);
         return ("");
       }
     } else if (externalfile != null) {
@@ -193,6 +202,7 @@ class RestedScript {
 
   Future<String> doCommands(
       List<String> commands, RestedScriptArguments args) async {
+        debug("doCommands()");
     String data = "";
     for (String command in commands) {
       if (command != null) {
@@ -308,6 +318,7 @@ class RestedScript {
   /// include("scripts.html");
 
   String f_set(String scriptargument, RestedScriptArguments args) {
+    debug("f_set()");
     StringTools argparser = new StringTools(scriptargument);
     argparser.moveTo(',');
     String key = argparser.getAllBeforePosition();
@@ -321,6 +332,7 @@ class RestedScript {
   /// Example:
   ///
   String f_args(String scriptargument, RestedScriptArguments args) {
+    debug("f_args()");
     if (args.args.containsKey(scriptargument)) {
       return args.args[scriptargument].toString();
     } else {
@@ -329,6 +341,7 @@ class RestedScript {
   }
 
   void f_debug(String argument, RestedScriptArguments args) {
+    debug("f_debug()");
     StringTools fparser = new StringTools(argument);
     String output = "";
     bool run = true;
@@ -360,6 +373,7 @@ class RestedScript {
   bool comment_on = false;
 
   String removeCommentsFromLine(String line) {
+    debug("removeCommentsFromLine()");
     if (comment_on) {
       line = "";
     } else if (line.contains('//')) {
@@ -375,6 +389,7 @@ class RestedScript {
   }
 
   String removeComments(List<String> lines) {
+    debug("removeComments()");
     List<String> document = [];
     bool rs = false;
 
@@ -408,6 +423,7 @@ class RestedScript {
 
   Future<String> processLines(
       List<String> lines, RestedScriptArguments args) async {
+        debug("processLines()");
     String document = removeComments(lines);
     document = await wrapDocument(document);
     List<String> rs_blocks = [];
@@ -487,6 +503,7 @@ class RestedScript {
 
   String replaceInQuotedString(
       String block, String replace, String replaceWith) {
+        debug("replaceInQuotedString()");
     StringTools block_parser = new StringTools(block);
     bool in_quote = false;
     while (block_parser.eol == false) {
