@@ -19,10 +19,10 @@ Document manipulation verbs live outside of the language tags and are themselves
 
 ### Execution, Memory and the Document Object
 
-RestedScript is a process that starts execution based on an input file. As soon as it starts reading the file a Document Object is created containing the content of the initial document. More data can be added through processing or read as input from local or external data. Any data stored as arguments either at start of execution (passed as an Argument Object) or saved as variables throughout execution lives until there is no more data to read or execute. The resulting string will be returned from the starting function and the Document Object will suffer the wrath of the Dart garbage collector.
+RestedScript is a process that starts execution based on an input file. As soon as it starts reading the file a Document Object is created containing the content of the initial document. More data can be added through processing or read as input from local or external data. Any data stored as arguments either at start of execution (passed as an Arguments object) or saved as variables throughout execution lives until there is no more data to read or execute. The resulting string will be returned from the starting function and the Document Object will suffer the wrath of the Dart garbage collector.
 
 
-### RestedScript Language Functions
+### RestedScript Language
 
 #### include(string);
 This immediately parse and process the included file and include the result.
@@ -54,7 +54,21 @@ download("404.html");
 ```
 
   
-### RestedScript Document Manipulation Verbs
+### The Arguments Object
+An important link between your server code and RestedScript is the Arguments object. It hosts a set of variable structures you can populate and then send as one single object to the RestedScript engine. Any variables declared there are available throughout the execution process. They can be read or written to and new variables can be added directly from RestedScript.
+  
+In your Dart server code an Arguments object are instantiated empty through the Arguments class. They are then passed as an optional value in the createDocument function. If no Arguments object is passed then createDocument actually instatiates one for you so that RestedScript has a place to store variables created in script.
+  
+With an empty Arguments object you have a set of set and get functions for storing data. In RestedScript you can have duplicate variable names, as long as they are of a different type. For more about using variable types see the RestedScript Language section above.
+  
+#### setString(string key, string value);
+Declares a string with the '''key''' and '''value''' in the arguments object. Equivalent to for example '''string someKey = "Some Value";''' in RestedScript.
+
+#### getString(string key);
+Returns the value of the given key. Used internally by the RestedScript engine, but also made available for your server code.
+  
+  
+### RestedScript Document Manipulation
 
   
 #### {{content("id")}}
