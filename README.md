@@ -24,29 +24,30 @@ RestedScript is a process that starts execution based on an input file. As soon 
 
 ### RestedScript Language
 
-#### include(string);
-This immediately parse and process the included file and include the result.
+#### include(string filepath);
+This processes the file and includes the result. Keep in mind that the filepath is relative to the root directory of RestedScript, not the relative to the initial file referenced in the createDocument() argument. In other words, if createDocument('admin/index.html'); contains a include("styles.css"); file then it will not look for the file in 'admin/styles.css' but rather 'styles.css'.
 
 ```
 include("index.html");
 ```
 
-#### download(string);
+#### download(string url);
 Downloads and includes the text in the URL. If the file contains RestedScript it will be processed just like a standard include() function.
 
 ```
 download("https://raw.githubusercontent.com/thomasberge/rested_script/dev/test/pages/include.html");
 ```
 
-#### print(string); / echo(string);
-The passed string argument to print() will be written in the document. Also supports echo() for the exact same result.
+#### print(string text); / echo(string text);
+The passed string argument to print() will be written in the document. Also supports echo() for the exact same result. If the passed value is not in quotes then it is assumed to be a variable. If the variable is not a string then it will be 
 
 ```
 print("This line will be written in the document.");
+print(myVariable);
 echo("This line will also be written in the document.");
 ```
 
-#### flag(string);
+#### flag(string filename);
 If the flag site is called at any point in the code then the page referred to will be displayed no matter what the code contains. The code will however continue to execute, but it will not render to the user. The argument needs to point to a specific file in <root>/flagsites/.
 
 ```
