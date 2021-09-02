@@ -80,6 +80,11 @@ Some verbs require a target location within the document. These will look for co
 #### {{wrap("/some/file.txt", "someId")}}
 Will open the file.txt, find the contentId someId tag within the document. The current Document Object will be wrapped with whatever is before and after the contentId.
 
+
+#### {{foreach("listname")}}
+#### {{element("listname"}}
+#### {{endforeach("listname")}}
+Will look for a List with key "listname" in the Arguments object. If found it will replace {{element}} with each item in that list. If for example you are populating a list of users your document can contain markup around a tag {{element("usernames"}}. By iterating over list "usernames" that element would be replaced with the actual usernames from the list.
   
 ### Testing
 There is a test script included in /test that runs all functions in different variations and tests against the result. A report is written to console where each function is graded with a OK or Failed. If changes are made to rested_script then new functions should be added and all functions tested again to make sure they pass.
