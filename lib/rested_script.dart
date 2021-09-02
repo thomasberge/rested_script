@@ -117,7 +117,7 @@ class RestedScript {
   }
 
   Future<String> createDocument(
-      String filepath, {RestedScriptArguments? args = null}) async {
+      String filepath, {Arguments? args = null}) async {
     flag = "";
     String doc = await parse(filepath, args: args);
     if (flag != "") {
@@ -177,10 +177,10 @@ class RestedScript {
   }
 
   Future<String> parse(String filepath,
-      {RestedScriptArguments? args = null, String? externalfile = null}) async {
+      {Arguments? args = null, String? externalfile = null}) async {
         debug("parse()()");
     if (args == null) {
-      args = new RestedScriptArguments();
+      args = new Arguments();
     }
     if (filepath != "") {
       try {
@@ -201,7 +201,7 @@ class RestedScript {
   }
 
   Future<String> doCommands(
-      List<String> commands, RestedScriptArguments args) async {
+      List<String> commands, Arguments args) async {
         debug("doCommands()");
     String data = "";
     for (String command in commands) {
@@ -317,7 +317,7 @@ class RestedScript {
   /// Example:
   /// include("scripts.html");
 
-  String f_set(String scriptargument, RestedScriptArguments args) {
+  String f_set(String scriptargument, Arguments args) {
     debug("f_set()");
     StringTools argparser = new StringTools(scriptargument);
     argparser.moveTo(',');
@@ -331,7 +331,7 @@ class RestedScript {
   ///
   /// Example:
   ///
-  String f_args(String scriptargument, RestedScriptArguments args) {
+  String f_args(String scriptargument, Arguments args) {
     debug("f_args()");
     if (args.args.containsKey(scriptargument)) {
       return args.args[scriptargument].toString();
@@ -340,7 +340,7 @@ class RestedScript {
     }
   }
 
-  void f_debug(String argument, RestedScriptArguments args) {
+  void f_debug(String argument, Arguments args) {
     debug("f_debug()");
     StringTools fparser = new StringTools(argument);
     String output = "";
@@ -422,7 +422,7 @@ class RestedScript {
   }
 
   Future<String> processLines(
-      List<String> lines, RestedScriptArguments args) async {
+      List<String> lines, Arguments args) async {
         debug("processLines()");
     String document = removeComments(lines);
     document = await wrapDocument(document);
@@ -433,25 +433,39 @@ class RestedScript {
     // process <% %> tags
     while (run) {
       String block;
-      if (dparser.moveTo('<% forlist %>')) {
-        dparser.deleteCharacters(13);
+
+      // If the start of a forEach is found, select it and throw it into a new ST and get
+      // the key to the list. Then delete the forEach, return to the previous position and 
+      // start marking the block.
+      if (dparser.moveTo('{{foreach')) {
+        int prevPos = dparser.position;
         dparser.startSelection();
-        if (dparser.moveTo('<% endforlist %>')) {
-          dparser.deleteCharacters(13);
+        dparser.moveTo('}}');
+        dparser.move(characters: 2);
+        dparser.stopSelection();
+        StringTools forEachParser = StringTools(dparser.getSelection());
+        String listname = forEachParser.getQuotedString();
+        dparser.deleteSelection();
+        dparser.position = prevPos;
+        dparser.startSelection();
+
+        if (dparser.moveTo('{{endforeach("' + listname + '")}}')) {
+          dparser.deleteCharacters(('{{endforeach("' + listname + '")}}').length);
           dparser.stopSelection();
           block = dparser.getSelection();
           dparser.position = dparser.start_selection;
           dparser.deleteSelection();
+          List<dynamic> thelist = args.get(listname);
           int i = 0;
-          while (i < args.list.length) {
+          while (i < thelist.length) {
             String newblock =
-                block.replaceAll("<% element %>", args.list[i].toString());
+                block.replaceAll('{{element("' + listname + '")}}', thelist[i].toString());
             dparser.insertAtPosition(newblock);
             dparser.move(characters: newblock.length);
             i++;
           }
         } else {
-          print("Missing closing <% endforlist %>");
+          print('Missing closing {{endforeach}}');
         }
       } else {
         run = false;
@@ -512,7 +526,7 @@ class RestedScript {
     return block;
   }
 
-  String do_if(String command, String line, RestedScriptArguments args) {
+  String do_if(String command, String line, Arguments args) {
     List<String> command_details = command.split(':');
     bool do_this = args.getBool(command_details[1]);
     return "";

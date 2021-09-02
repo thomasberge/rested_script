@@ -33,7 +33,18 @@ main() async {
     print("flag()\t\t\t\t\t[\u001b[32mOK\u001b[0m]");
   }
 
-  
+  if(await test_printVariable()) {
+    print("test_print(variable)\t\t\t[\u001b[31mFailed\u001b[0m]");
+  } else {
+    print("test_print(variable)\t\t\t[\u001b[32mOK\u001b[0m]");  
+  }
+
+  if(await test_foreach()) {
+    print("test_foreach()\t\t\t\t[\u001b[31mFailed\u001b[0m]");
+  } else {
+    print("test_foreach()\t\t\t\t[\u001b[32mOK\u001b[0m]");  
+  } 
+
   /*
   if(await test_var()) {
     print("var()\t\t\t\t\t[\u001b[31mFailed\u001b[0m]");
@@ -90,7 +101,7 @@ Future<bool> test_var() async {
   bool bugs = true;
   RestedScript restedscript = RestedScript(root: "/app/bin/pages/");
   String result = await restedscript.createDocument("variables.html");
-  print(result);
+  //print(result);
   if(result == "this is a test!") {
     bugs = false;
   }
@@ -101,6 +112,33 @@ Future<bool> test_wrap_and_content() async {
   bool bugs = true;
   RestedScript restedscript = RestedScript(root: "/app/bin/pages/");
   String result = await restedscript.createDocument("wrapping.html");
+  //print(result);
+  return bugs;
+}
+
+Future<bool> test_printVariable() async {
+  bool bugs = true;
+  Arguments args = new Arguments();
+  args.set("test", "rocketship");
+  args.set("condition", true);
+  RestedScript restedscript = RestedScript(root: "/app/bin/pages/");
+  String result = await restedscript.createDocument("arguments-stringmap.html", args: args);
+  if(result == "This is a rocketship!") {
+    bugs = false;
+  }
+  return bugs;
+}
+
+Future<bool> test_foreach() async {
+  bool bugs = true;
+  Arguments args = new Arguments();
+  List<String> movies = [];
+  movies.add("The Aviator");
+  movies.add("Terminator 2");
+  movies.add("The Abyss");
+  args.set("movies", movies);
+  RestedScript restedscript = RestedScript(root: "/app/bin/pages/");
+  String result = await restedscript.createDocument("foreach.html", args: args);
   print(result);
   return bugs;
 }

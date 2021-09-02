@@ -3,11 +3,11 @@ import 'package:string_tools/string_tools.dart';
 import 'io.dart' as io;
 import 'arguments.dart';
 
-Future<String> download(String argument, RestedScriptArguments args) async {
+Future<String> download(String argument, Arguments args) async {
   return(await io.downloadTextFile(argument));
 }
 
-String flag(String argument, RestedScriptArguments args) {
+String flag(String argument, Arguments args) {
   argument = argument.replaceAll('"', '');
   String filetype = argument.split('.')[1];
 
@@ -19,7 +19,7 @@ String flag(String argument, RestedScriptArguments args) {
   }
 }
 
-Future<String> include(String argument, RestedScriptArguments args) async {
+Future<String> include(String argument, Arguments args) async {
   argument = argument.replaceAll('"', '');
   List<String> split = argument.split('.');
   if (split.length > 1) {
@@ -39,12 +39,12 @@ Future<String> include(String argument, RestedScriptArguments args) async {
   }
 }
 
-String echo(String argument, RestedScriptArguments args) {
+String echo(String argument, Arguments args) {
   StringTools fparser = new StringTools(argument);
   String output = "";
   bool run = true;
   while (run) {
-    if (fparser.getFromPosition() == '"') {
+    if (fparser.data.substring(0,1) == '"') {
       fparser.move();
       fparser.startSelection();
       if (fparser.moveTo('"')) {
@@ -58,15 +58,20 @@ String echo(String argument, RestedScriptArguments args) {
         run = false;
       }
     } else {
-      print("Error: print missing quote(s) inside parentheses.\r\n print(" +
-          fparser.data +
-          ");");
-      run = false;
+      if(args.get(argument).toString() != "%KEYDOESNOTEXIST%") {
+        output = args.get(argument).toString();
+        run = false;
+      } else {
+        print("Error: print missing quote(s) inside parentheses.\r\n print(" +
+            fparser.data +
+            ");");
+        run = false;
+      }
     }
   }
   return (output);
 }
 
-void variable(String argument, RestedScriptArguments args) {
+void variable(String argument, Arguments args) {
   print("var argument=" + argument);
 }

@@ -1,6 +1,22 @@
 import 'package:string_tools/string_tools.dart';
 
-class RestedScriptArguments {
+class Arguments {
+  Map _map = new Map<String, dynamic>();
+
+  void set(String key, dynamic value) {
+    _map[key] = value;
+  }
+
+  dynamic get(String key) {
+    if (_map.containsKey(key)) {
+      return _map[key];
+    } else {
+      print("Key " + key + " does not exist in rscript stringmap.");
+      return "%KEYDOESNOTEXIST%";
+    }
+  }
+
+  // ------ UNDOCUMENTED OLD STUFF DOWN BELOW THIS LINE ------------- //
   String directoryPath = "";
   List<dynamic> list = [];
   Map<dynamic, dynamic> map = new Map();
@@ -23,19 +39,6 @@ class RestedScriptArguments {
 
   void setBool(String key, bool value) {
     boolmap[key] = value;
-  }
-
-  void setString(String key, String value) {
-    stringmap[key] = value;
-  }
-
-  String getString(String key) {
-    if (stringmap.containsKey(key)) {
-      return stringmap[key];
-    } else {
-      print("Key " + key + " does not exist in rscript stringmap.");
-      return "";
-    }
   }
 
   bool getBool(String key) {
