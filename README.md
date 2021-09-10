@@ -31,6 +31,13 @@ This processes the file and includes the result. Keep in mind that the filepath 
 include("index.html");
 ```
 
+#### debug(string message);
+Prints the message to console.
+
+```
+debug("This part of your document is currently being processed.");
+```
+
 #### download(string url);
 Downloads and includes the text in the URL. If the file contains RestedScript it will be processed just like a standard include() function.
 

@@ -1,9 +1,13 @@
 import 'package:string_tools/string_tools.dart';
 
 class Arguments {
+  Map<String, String> _varNames = {};
   Map _map = new Map<String, dynamic>();
 
   void set(String key, dynamic value) {
+    if(value is Map) {
+      _varNames[key] = "Map";
+    }
     _map[key] = value;
   }
 
@@ -14,6 +18,18 @@ class Arguments {
       print("Key " + key + " does not exist in rscript stringmap.");
       return "%KEYDOESNOTEXIST%";
     }
+  }
+
+  String type(String key) {
+    return _varNames[key].toString();
+  }
+
+  bool isVar(key) {
+    return _varNames.containsKey(key);
+  }
+
+  String getVarTable() {
+    return _map.toString();
   }
 
   // ------ UNDOCUMENTED OLD STUFF DOWN BELOW THIS LINE ------------- //

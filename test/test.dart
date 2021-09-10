@@ -1,8 +1,12 @@
 import 'rested_script.dart';
 
 main() async {
-  print("Testing RestedScript:");
-  
+  if(await test_debug()) {
+    print("debug()\t\t\t\t\t[\u001b[31mFailed\u001b[0m]");
+  } else {
+    print("debug()\t\t\t\t\t[\u001b[32mOK\u001b[0m]");  
+  } 
+
   if(await test_wrap_and_content()) {
     print("wrap() / content()\t\t\t[\u001b[31mFailed\u001b[0m]");
   } else {
@@ -34,24 +38,23 @@ main() async {
   }
 
   if(await test_printVariable()) {
-    print("test_print(variable)\t\t\t[\u001b[31mFailed\u001b[0m]");
+    print("print(variable)\t\t\t\t[\u001b[31mFailed\u001b[0m]");
   } else {
-    print("test_print(variable)\t\t\t[\u001b[32mOK\u001b[0m]");  
+    print("print(variable)\t\t\t\t[\u001b[32mOK\u001b[0m]");  
   }
 
   if(await test_foreach()) {
-    print("test_foreach()\t\t\t\t[\u001b[31mFailed\u001b[0m]");
+    print("{{foreach}}\t\t\t\t[\u001b[31mFailed\u001b[0m]");
   } else {
-    print("test_foreach()\t\t\t\t[\u001b[32mOK\u001b[0m]");  
+    print("{{foreach}}\t\t\t\t[\u001b[32mOK\u001b[0m]");  
+  }
+
+  if(await test_map()) {
+    print("Map[]\t\t\t\t[\u001b[31mFailed\u001b[0m]");
+  } else {
+    print("Map[]\t\t\t\t[\u001b[32mOK\u001b[0m]");  
   } 
 
-  /*
-  if(await test_var()) {
-    print("var()\t\t\t\t\t[\u001b[31mFailed\u001b[0m]");
-  } else {
-    print("var()\t\t\t\t\t[\u001b[32mOK\u001b[0m]");
-  }  
-  */
 }
 
 Future<bool> test_include() async {
@@ -112,7 +115,9 @@ Future<bool> test_wrap_and_content() async {
   bool bugs = true;
   RestedScript restedscript = RestedScript(root: "/app/bin/pages/");
   String result = await restedscript.createDocument("wrapping.html");
-  //print(result);
+  if(result == "ABCDEFGHI") {
+    bugs = false;
+  }
   return bugs;
 }
 
@@ -132,13 +137,39 @@ Future<bool> test_printVariable() async {
 Future<bool> test_foreach() async {
   bool bugs = true;
   Arguments args = new Arguments();
-  List<String> movies = [];
-  movies.add("The Aviator");
-  movies.add("Terminator 2");
-  movies.add("The Abyss");
-  args.set("movies", movies);
+  List<String> numbers = [];
+  numbers.add("4");
+  numbers.add("5");
+  numbers.add("6");
+  args.set("numbers", numbers);
   RestedScript restedscript = RestedScript(root: "/app/bin/pages/");
   String result = await restedscript.createDocument("foreach.html", args: args);
-  print(result);
+  if(result == "123456789") {
+    bugs = false;
+  }
+  return bugs;
+}
+
+Future<bool> test_debug() async {
+  bool bugs = true;
+  RestedScript restedscript = RestedScript(root: "/app/bin/pages/");
+  String result = await restedscript.createDocument("debug.html");
+  if(result == "") {
+    bugs = false;
+  }
+  return bugs;
+}
+
+Future<bool> test_map() async {
+  bool bugs = true;
+  Arguments args = new Arguments();
+  Map<String, dynamic> testmap = { "name": "Terminator", "version": 2000 };
+  args.set("movies", testmap);
+  RestedScript restedscript = RestedScript(root: "/app/bin/pages/");
+  String result = await restedscript.createDocument("maps.html", args: args);
+  if(result == "This is a rocketship!") {
+    bugs = false;
+  }
+  print(args.getVarTable());
   return bugs;
 }

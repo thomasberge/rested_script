@@ -72,6 +72,17 @@ String echo(String argument, Arguments args) {
   return (output);
 }
 
+void debug(String argument, Arguments args) {
+  StringTools cursor = new StringTools(argument);  
+  String output = cursor.getQuotedString();
+  print("\u001b[31m" + output + "\u001b[0m");
+}
+
 void variable(String argument, Arguments args) {
   print("var argument=" + argument);
+}
+
+String map(String argument, Arguments args) {
+  print("map function called");
+  return "";
 }

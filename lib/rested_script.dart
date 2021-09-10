@@ -14,6 +14,28 @@ import 'src/functions.dart' as functions;
 import 'src/arguments.dart';
 export 'src/arguments.dart';
 
+List<String> supportedFunctions = ["include", "print", "echo", "flag", "debug", "download"];
+
+String isSupportedFunction(String data) {
+  int i = 0;
+  String supported = "%NOTSUPPORTED%";
+  while(i < supportedFunctions.length) {
+    if (data.substring(0, supportedFunctions[i].length + 1) == supportedFunctions[i] + "(")
+    {
+      supported = supportedFunctions[i];
+      //print(supportedFunctions[i] + " is a supported function!");
+      i = 1000;
+    }
+    i++;
+  }
+
+  if(supported == "%NOTSUPPORTED%") {
+    print(data + " is NOT a supported function!");
+  }
+
+  return supported;
+}
+
 bool debugEnabled = false;
 void debug(String message) {
   if(debugEnabled) {
@@ -204,10 +226,12 @@ class RestedScript {
       List<String> commands, Arguments args) async {
         debug("doCommands()");
     String data = "";
+
     for (String command in commands) {
       if (command != null) {
         command = command.trim();
         if (command != "") {
+
           StringTools cparser = new StringTools(command);
           if ('${cparser.data[0]}' == '\$') {
             // if the character first is a $ ...
@@ -251,7 +275,7 @@ class RestedScript {
                 print("Key >" + key + "< not in setmap.");
               }
             }
-          } else if (cparser.data.substring(0,4) == "var ") {   // VARIABLE DECLARATIONS
+          } else if (cparser.data.substring(0,4) == "var ") {   // VARIABLE DECLARATION OR ASSIGNMENT
             cparser.data = cparser.data.substring(4);
             if (cparser.data.split('=').length == 2) {
               String name = cparser.data.split('=')[0].trim();
@@ -266,7 +290,19 @@ class RestedScript {
             } else {
               print("variable declaration error at var " + cparser.data);
             }
+          } else if (cparser.data.substring(0,4) == "Map ") {
+            print("variable declaration of a Map");
           } else {
+            
+            data = await doFunctions(cparser.data, args, data);
+
+            // Mapname["key"]
+            if(cparser.data.startsWith('Map[')) {
+              String maparg = cparser.getQuotedString();
+              print("Map argument >" + maparg + "<");
+            } 
+
+            // FUNCTIONCALLS
             cparser.startSelection();
             cparser.moveTo('(');
             cparser.stopSelection();
@@ -279,34 +315,100 @@ class RestedScript {
             cparser.stopSelection();
             String scriptargument = cparser.getSelection();
 
-            if (scriptfunction == "include") {
-              String file = await functions.include(scriptargument, args);
-              if (file != "") {
-                String processed_file = await parse(file, args: args);
-                data = data + processed_file;
-              }
-            } else if (scriptfunction == "flag") {
-              String flagsite = functions.flag(scriptargument, args);
-              if(flagsite != "unsupported") {
-                flag = flagsite;
-              }
-            } else if (scriptfunction == "print" || scriptfunction == "echo") {
-              data = data + functions.echo(scriptargument, args);
-            } else if (scriptfunction == "set") {
+            if (scriptfunction == "set") {
               data = data + f_set(scriptargument, args);
             } else if (scriptfunction == "args") {
               data = data + f_args(scriptargument, args);
             }else if (scriptfunction == "var") {
               functions.variable(scriptargument, args);
-            } else if (scriptfunction == "download") {
-              String file = await functions.download(scriptargument, args);
-              String processed_file = await parse("", args: args, externalfile: file);
-              data = data + processed_file;
-            } else if (scriptfunction == "debug") {
-              f_debug(scriptargument, args);
+            } else if (scriptfunction == "Map") {
+              data = data + functions.map(scriptargument, args);
             }
           }
         }
+      }
+    }
+    return data;
+  }
+
+  // NEW FUNCTIONS METHOD
+  Future<String> doFunctions(String cursordata, Arguments args, data) async {
+    String function = isSupportedFunction(cursordata);
+    if (function != "%NOTSUPPORTED%") {
+      StringTools cursor = StringTools(cursordata);
+      switch(function) {   
+
+        case "include": {
+          String filepath = cursor.getQuotedString();
+          String file = await functions.include(filepath, args);
+          if (file != "") {
+            String processed_file = await parse(file, args: args);
+            data = data + processed_file;
+          }
+        } 
+        break;
+
+        case "print": {
+          if(cursor.data.contains('"')) {
+            String string = cursor.getQuotedString();
+            data = data + functions.echo('"' + string + '"', args);
+          } else {
+            String variable = cursor.getFromTo("(", ")");
+            data = data + functions.echo(variable, args);
+          }
+        } 
+        break;
+
+        case "echo": { 
+          if(cursor.data.contains('"')) {
+            String string = cursor.getQuotedString();
+            data = data + functions.echo('"' + string + '"', args);
+          } else {
+            String variable = cursor.getFromTo("(", ")");
+            data = data + functions.echo(variable, args);
+          }
+        } 
+        break;  
+
+        case "flag": {
+          String file = cursor.getQuotedString();
+          String flagsite = functions.flag(file, args);
+          if(flagsite != "unsupported") {
+            flag = flagsite;
+          }
+        } 
+        break;
+
+        case "download": {
+          String url = cursor.getQuotedString();
+          String file = await functions.download('"' + url + '"', args);
+          String processed_file = await parse("", args: args, externalfile: file);
+          data = data + processed_file;
+        } 
+        break;
+
+        case "debug": {
+          String message = cursor.getQuotedString();
+          functions.debug('"' + message + '"', args);
+        } 
+        break;
+
+      }
+    } else {
+      StringTools cursor = StringTools(cursordata);
+      List<String> values = [" ", "["];
+      cursor.startSelection();
+      String type = cursor.moveToListElement(values);
+      if (type == "[") {
+        cursor.stopSelection();
+        String mapname = cursor.getSelection();
+        if(args.isVar(mapname)) {
+          String arg = cursor.getQuotedString();
+          var mapdata = args.get(mapname);
+          data = data + mapdata[arg].toString();
+        }
+      } else if (type == " "){
+
       }
     }
     return data;
@@ -338,36 +440,6 @@ class RestedScript {
     } else {
       return "";
     }
-  }
-
-  void f_debug(String argument, Arguments args) {
-    debug("f_debug()");
-    StringTools fparser = new StringTools(argument);
-    String output = "";
-    bool run = true;
-    while (run) {
-      if (fparser.getFromPosition() == '"') {
-        fparser.move();
-        fparser.startSelection();
-        if (fparser.moveTo('"')) {
-          fparser.stopSelection();
-          output = output + fparser.getSelection();
-          run = false;
-        } else {
-          print("Error: debug missing quote(s) inside parentheses.\r\n debug(" +
-              fparser.data +
-              ");");
-          run = false;
-        }
-      } else {
-        print("Error: debug missing quote(s) inside parentheses.\r\n debug(" +
-            fparser.data +
-            ");");
-        run = false;
-      }
-    }
-
-    print("\u001b[31m" + output + "\u001b[0m");
   }
 
   bool comment_on = false;
@@ -455,15 +527,47 @@ class RestedScript {
           block = dparser.getSelection();
           dparser.position = dparser.start_selection;
           dparser.deleteSelection();
-          List<dynamic> thelist = args.get(listname);
-          int i = 0;
-          while (i < thelist.length) {
-            String newblock =
-                block.replaceAll('{{element("' + listname + '")}}', thelist[i].toString());
-            dparser.insertAtPosition(newblock);
-            dparser.move(characters: newblock.length);
-            i++;
+
+
+          //List<dynamic> thelist = args.get(listname);
+          var thelist = args.get(listname);
+            int i = 0;
+            while (i < thelist.length) {
+              String newblock =
+                  block.replaceAll('{{element("' + listname + '")}}', thelist[i].toString());
+              dparser.insertAtPosition(newblock);
+              dparser.move(characters: newblock.length);
+              i++;
+            }            
+          
+
+          /*
+
+            List<Map<String, dynamic>>
+
+            iterates over:
+            list[i]
+      
+            for each it will return list[i].map["key"].value
+          */
+/*
+          else if(thelist is List<Map<String, dynamic>>) {
+            print("LIST OF MAPS OHOI!");
+          }*/
+
+          /*
+          else if(thelist is Map<String, dynamic>) {
+            int i = 0;
+            int length = thelist.length;
+            while (i < length) {
+              String newblock;
+              thelist.keys.forEach((k, v) => newblock = block.replaceAll('{{element("${k}")}}', "${v}"));
+              dparser.insertAtPosition(newblock);
+              dparser.move(characters: newblock.length);
+              i++;
+            }
           }
+          */
         } else {
           print('Missing closing {{endforeach}}');
         }
