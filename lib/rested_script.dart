@@ -11,30 +11,10 @@ import 'package:string_tools/string_tools.dart';
 
 import 'src/io.dart' as io;
 import 'src/functions.dart' as functions;
+import 'src/variables.dart' as variables;
 import 'src/arguments.dart';
 export 'src/arguments.dart';
-
-List<String> supportedFunctions = ["include", "print", "echo", "flag", "debug", "download"];
-
-String isSupportedFunction(String data) {
-  int i = 0;
-  String supported = "%NOTSUPPORTED%";
-  while(i < supportedFunctions.length) {
-    if (data.substring(0, supportedFunctions[i].length + 1) == supportedFunctions[i] + "(")
-    {
-      supported = supportedFunctions[i];
-      //print(supportedFunctions[i] + " is a supported function!");
-      i = 1000;
-    }
-    i++;
-  }
-
-  if(supported == "%NOTSUPPORTED%") {
-    print(data + " is NOT a supported function!");
-  }
-
-  return supported;
-}
+import 'src/processes.dart';
 
 bool debugEnabled = false;
 void debug(String message) {
@@ -62,11 +42,6 @@ class RestedScript {
   String root;
 
   String flag = "";
-
-  // for future use
-  String expandForLists(String data, int count) {
-    return data;
-  }
 
   List<CodeBlock> CreateCodeBlocks(String data) {
     int start_tags = 0;
@@ -275,32 +250,41 @@ class RestedScript {
                 print("Key >" + key + "< not in setmap.");
               }
             }
-          } else if (cparser.data.substring(0,4) == "var ") {   // VARIABLE DECLARATION OR ASSIGNMENT
-            cparser.data = cparser.data.substring(4);
-            if (cparser.data.split('=').length == 2) {
-              String name = cparser.data.split('=')[0].trim();
-              String value = cparser.data.split('=')[1].trim();
-              
-              // derive type
-              StringTools valueParser = new StringTools(value);
-              if(valueParser.edgesIs('"')) {
-                valueParser.deleteEdges();
-                args.stringmap[name] = value;
-              }
-            } else {
-              print("variable declaration error at var " + cparser.data);
-            }
-          } else if (cparser.data.substring(0,4) == "Map ") {
-            print("variable declaration of a Map");
           } else {
+            String function = functions.isSupportedFunction(cparser.data);
+            if (function != "%NOTSUPPORTED%") {
+              data = await doFunctions(function, cparser.data, args, data);
+            } else {
+              String variabletype = variables.isVariableDeclaration(cparser.data);
+              if (variabletype != "%NOTSUPPORTED%") {
+                if(variabletype == "Map") {
+                  cparser.data = cparser.data.substring(variabletype.length + 1);
+                  if(cparser.moveTo('=')) {
+                    String variablename = cparser.getAllBeforePosition().trim();
+                    String variabledeclaration = cparser.getAllAfterPosition().trim();
+                    cparser.data = variabledeclaration;
+                    if(cparser.firstIs('{')) {
+                      if(cparser.lastIs('}')) {
+                        try {
+                          Map valueMap = jsonDecode(variabledeclaration);
+                        } catch(e) {
+                          print("Unable to parse to map. Need to be valid JSON.\r\n" + variabledeclaration);
+                        }
+                      } else {
+                        print("Map declaration not terminated with }\r\n" + variabledeclaration);
+                      }
+                    } else {
+                      print("Map from var:" + variabledeclaration);
+                    }
+                  } else {
+                    print("Map declaration error, missing = in declaration:\r\nMap " + cparser.data);
+                  }
+                  print(">" + cparser.data + "<");
+                }
+                
+              }
+            }
             
-            data = await doFunctions(cparser.data, args, data);
-
-            // Mapname["key"]
-            if(cparser.data.startsWith('Map[')) {
-              String maparg = cparser.getQuotedString();
-              print("Map argument >" + maparg + "<");
-            } 
 
             // FUNCTIONCALLS
             cparser.startSelection();
@@ -321,8 +305,6 @@ class RestedScript {
               data = data + f_args(scriptargument, args);
             }else if (scriptfunction == "var") {
               functions.variable(scriptargument, args);
-            } else if (scriptfunction == "Map") {
-              data = data + functions.map(scriptargument, args);
             }
           }
         }
@@ -332,8 +314,8 @@ class RestedScript {
   }
 
   // NEW FUNCTIONS METHOD
-  Future<String> doFunctions(String cursordata, Arguments args, data) async {
-    String function = isSupportedFunction(cursordata);
+  Future<String> doFunctions(String function, String cursordata, Arguments args, data) async {
+
     if (function != "%NOTSUPPORTED%") {
       StringTools cursor = StringTools(cursordata);
       switch(function) {   
@@ -539,35 +521,6 @@ class RestedScript {
               dparser.move(characters: newblock.length);
               i++;
             }            
-          
-
-          /*
-
-            List<Map<String, dynamic>>
-
-            iterates over:
-            list[i]
-      
-            for each it will return list[i].map["key"].value
-          */
-/*
-          else if(thelist is List<Map<String, dynamic>>) {
-            print("LIST OF MAPS OHOI!");
-          }*/
-
-          /*
-          else if(thelist is Map<String, dynamic>) {
-            int i = 0;
-            int length = thelist.length;
-            while (i < length) {
-              String newblock;
-              thelist.keys.forEach((k, v) => newblock = block.replaceAll('{{element("${k}")}}', "${v}"));
-              dparser.insertAtPosition(newblock);
-              dparser.move(characters: newblock.length);
-              i++;
-            }
-          }
-          */
         } else {
           print('Missing closing {{endforeach}}');
         }
@@ -617,22 +570,5 @@ class RestedScript {
     }
 
     return document;
-  }
-
-  String replaceInQuotedString(
-      String block, String replace, String replaceWith) {
-        debug("replaceInQuotedString()");
-    StringTools block_parser = new StringTools(block);
-    bool in_quote = false;
-    while (block_parser.eol == false) {
-      block_parser.moveTo('"');
-    }
-    return block;
-  }
-
-  String do_if(String command, String line, Arguments args) {
-    List<String> command_details = command.split(':');
-    bool do_this = args.getBool(command_details[1]);
-    return "";
   }
 }

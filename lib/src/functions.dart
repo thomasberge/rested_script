@@ -3,6 +3,27 @@ import 'package:string_tools/string_tools.dart';
 import 'io.dart' as io;
 import 'arguments.dart';
 
+List<String> supportedFunctions = ["include", "print", "echo", "flag", "debug", "download"];
+
+String isSupportedFunction(String data) {
+  int i = 0;
+  String supported = "%NOTSUPPORTED%";
+  while(i < supportedFunctions.length) {
+    if (data.substring(0, supportedFunctions[i].length + 1) == supportedFunctions[i] + "(")
+    {
+      supported = supportedFunctions[i];
+      i = 1000;
+    }
+    i++;
+  }
+
+  if(supported == "%NOTSUPPORTED%") {
+    //print(data + " is NOT a supported function!");
+  }
+
+  return supported;
+}
+
 Future<String> download(String argument, Arguments args) async {
   return(await io.downloadTextFile(argument));
 }

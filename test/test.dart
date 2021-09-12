@@ -147,6 +147,7 @@ Future<bool> test_foreach() async {
   if(result == "123456789") {
     bugs = false;
   }
+  print(result);
   return bugs;
 }
 
