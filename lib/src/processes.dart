@@ -1,13 +1,25 @@
+library restedscript.processes;
+
 import 'arguments.dart';
 
+ProcessManager pman = ProcessManager();
+
 class ProcessManager {
-    Map<int, Process> processes = {};
-    int pid = 0;
+    List<Process> processes = [];
+    int pidCounter = 0;
 
     int createProcess(Arguments args) {
-        int _pid = pid++;
-        processes[_pid] = Process(args);
+        int _pid = pidCounter++;
+        processes.insert(_pid, Process(args));
         return _pid;
+    }
+
+    Process? getProcess(int pid) {
+        return processes[pid];
+    }
+
+    Arguments? getArguments(int pid) {
+        return getProcess(pid)?.args;
     }
 }
 

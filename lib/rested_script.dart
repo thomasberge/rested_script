@@ -80,7 +80,7 @@ class RestedScript {
     while (i > 0) {
       List<String> blocklist = data.split('{{' + i.toString() + '}}');
       String temp = blocklist[1].toString();
-      String temp2 = collapseBlockTags(temp, levels);
+      //String temp2 = collapseBlockTags(temp, levels);
       CodeBlock newblock = new CodeBlock(i, temp);
       codeblocks.add(newblock);
       i--;
@@ -89,7 +89,7 @@ class RestedScript {
 
     return codeblocks;
   }
-
+/*
   // Collapses {{i}}<code>{{i}} to {{i}}
   //
   //  NOT YET DONE, CURRENTLY DOESNT RETURN ANYTHING
@@ -111,14 +111,20 @@ class RestedScript {
       i--;
     }
     return "";
-  }
+  }*/
 
-  Future<String> createDocument(
-      String filepath, {Arguments? args = null}) async {
+  Future<String> createDocument(String filepath, {Arguments? args = null}) async {
     flag = "";
-    String doc = await parse(filepath, args: args);
+
+    if(args == null) {
+      args = Arguments();
+    }
+
+    int pid = pman.createProcess(args);
+    String doc = await parse(filepath, pid);
+
     if (flag != "") {
-      doc = await parse("flagsites/" + flag, args: args);
+      doc = await parse("flagsites/" + flag, pid);
     }
     return doc;
   }
@@ -173,17 +179,13 @@ class RestedScript {
     return data;
   }
 
-  Future<String> parse(String filepath,
-      {Arguments? args = null, String? externalfile = null}) async {
+  Future<String> parse(String filepath, int pid, {String? externalfile = null}) async {
         debug("parse()()");
-    if (args == null) {
-      args = new Arguments();
-    }
     if (filepath != "") {
       try {
         File data = new File(root + filepath);
         List<String> lines = data.readAsLinesSync(encoding: utf8);
-        return (await processLines(lines, args));
+        return (await processLines(lines, pid));
       } on FileSystemException {
         print("Error reading " + root + filepath);
         return ("");
@@ -191,15 +193,14 @@ class RestedScript {
     } else if (externalfile != null) {
       LineSplitter ls = new LineSplitter();
       List<String> lines = ls.convert(externalfile);
-      return (await processLines(lines, args));
+      return (await processLines(lines, pid));
     } else {
       return "";
     }
   }
 
-  Future<String> doCommands(
-      List<String> commands, Arguments args) async {
-        debug("doCommands()");
+  Future<String> doCommands(List<String> commands, int pid) async {
+    debug("doCommands()");
     String data = "";
 
     for (String command in commands) {
@@ -225,9 +226,9 @@ class RestedScript {
               String scriptarguments = cparser.getSelection();
               if (scriptarguments != null) {
                 List<String> arglist = scriptarguments.split('|');
-                if (args.setmap.containsKey(key)) {
+                if (pman.processes[pid].args.setmap.containsKey(key)) {
                   int i = 0;
-                  String constructed_string = args.setmap[key];
+                  String constructed_string = pman.processes[pid].args.setmap[key];
                   for (String replacement in arglist) {
                     constructed_string = constructed_string.replaceAll(
                         ('\$' + i.toString()), replacement);
@@ -244,17 +245,18 @@ class RestedScript {
               }
             } else {
               String key = cparser.data.substring(1);
-              if (args.setmap.containsKey(key)) {
-                data = data + args.setmap[key];
+              if (pman.processes[pid].args.setmap.containsKey(key)) {
+                data = data + pman.processes[pid].args.setmap[key];
               } else {
                 print("Key >" + key + "< not in setmap.");
               }
             }
           } else {
             String function = functions.isSupportedFunction(cparser.data);
-            if (function != "%NOTSUPPORTED%") {
-              data = await doFunctions(function, cparser.data, args, data);
-            } else {
+            //if (function != "%NOTSUPPORTED%") {
+              data = await doFunctions(function, cparser.data, pid, data);
+            //} 
+            /* else {
               String variabletype = variables.isVariableDeclaration(cparser.data);
               if (variabletype != "%NOTSUPPORTED%") {
                 if(variabletype == "Map") {
@@ -283,7 +285,7 @@ class RestedScript {
                 }
                 
               }
-            }
+            }*/
             
 
             // FUNCTIONCALLS
@@ -300,11 +302,11 @@ class RestedScript {
             String scriptargument = cparser.getSelection();
 
             if (scriptfunction == "set") {
-              data = data + f_set(scriptargument, args);
+              data = data + f_set(scriptargument, pid);
             } else if (scriptfunction == "args") {
-              data = data + f_args(scriptargument, args);
+              data = data + f_args(scriptargument, pid);
             }else if (scriptfunction == "var") {
-              functions.variable(scriptargument, args);
+              functions.variable(scriptargument, pid);
             }
           }
         }
@@ -314,7 +316,7 @@ class RestedScript {
   }
 
   // NEW FUNCTIONS METHOD
-  Future<String> doFunctions(String function, String cursordata, Arguments args, data) async {
+  Future<String> doFunctions(String function, String cursordata, int pid, data) async {
 
     if (function != "%NOTSUPPORTED%") {
       StringTools cursor = StringTools(cursordata);
@@ -322,9 +324,9 @@ class RestedScript {
 
         case "include": {
           String filepath = cursor.getQuotedString();
-          String file = await functions.include(filepath, args);
+          String file = await functions.include(filepath, pid);
           if (file != "") {
-            String processed_file = await parse(file, args: args);
+            String processed_file = await parse(file, pid);
             data = data + processed_file;
           }
         } 
@@ -333,10 +335,10 @@ class RestedScript {
         case "print": {
           if(cursor.data.contains('"')) {
             String string = cursor.getQuotedString();
-            data = data + functions.echo('"' + string + '"', args);
+            data = data + functions.echo('"' + string + '"', pid);
           } else {
             String variable = cursor.getFromTo("(", ")");
-            data = data + functions.echo(variable, args);
+            data = data + functions.echo(variable, pid);
           }
         } 
         break;
@@ -344,17 +346,17 @@ class RestedScript {
         case "echo": { 
           if(cursor.data.contains('"')) {
             String string = cursor.getQuotedString();
-            data = data + functions.echo('"' + string + '"', args);
+            data = data + functions.echo('"' + string + '"', pid);
           } else {
             String variable = cursor.getFromTo("(", ")");
-            data = data + functions.echo(variable, args);
+            data = data + functions.echo(variable, pid);
           }
-        } 
+        }
         break;  
 
         case "flag": {
           String file = cursor.getQuotedString();
-          String flagsite = functions.flag(file, args);
+          String flagsite = functions.flag(file, pid);
           if(flagsite != "unsupported") {
             flag = flagsite;
           }
@@ -363,34 +365,66 @@ class RestedScript {
 
         case "download": {
           String url = cursor.getQuotedString();
-          String file = await functions.download('"' + url + '"', args);
-          String processed_file = await parse("", args: args, externalfile: file);
+          String file = await functions.download('"' + url + '"', pid);
+          String processed_file = await parse("", pid, externalfile: file);
           data = data + processed_file;
         } 
         break;
 
         case "debug": {
-          String message = cursor.getQuotedString();
-          functions.debug('"' + message + '"', args);
+          
+          //String message = cursor.getQuotedString();
+          //functions.debug('"' + message + '"', pid);
+          functions.debug(cursor.data, pid);
         } 
         break;
 
       }
     } else {
-      StringTools cursor = StringTools(cursordata);
-      List<String> values = [" ", "["];
-      cursor.startSelection();
-      String type = cursor.moveToListElement(values);
-      if (type == "[") {
-        cursor.stopSelection();
-        String mapname = cursor.getSelection();
-        if(args.isVar(mapname)) {
-          String arg = cursor.getQuotedString();
-          var mapdata = args.get(mapname);
-          data = data + mapdata[arg].toString();
-        }
-      } else if (type == " "){
+      String variableType = variables.isVariableDeclaration(cursordata);
+      //print("Variable type=" + variableType + "<");
+      //print("Data: " + cursordata);
+      if( variableType != "%NOTSUPPORTED%"){
+        switch(variableType) {
 
+        case "String": {
+          variables.initString(pid, cursordata);
+        }
+        break;
+
+        case "Int": {
+          variables.initInt(pid, cursordata);
+        }
+        break;
+
+        case "Bool": {
+          variables.initBool(pid, cursordata);
+        }
+        break;
+/*
+        case "Map": {
+          List<String> values = [" ", "["];
+          cursor.startSelection();
+          String type = cursor.moveToListElement(values);
+
+          // If first char is [ then the value is being used.
+          if (type == "[") {
+            cursor.stopSelection();
+            String mapname = cursor.getSelection();
+            if(pman.processes[pid].args.isVar(mapname)) {
+              String arg = cursor.getQuotedString();
+              var mapdata = pman.processes[pid].args.get(mapname);
+              data = data + mapdata[arg].toString();
+            }
+
+          // If the first value is a space then the variable is being initialized.
+          } else if (type == " "){
+
+          }
+        } 
+        break;*/
+
+        }
       }
     }
     return data;
@@ -401,13 +435,13 @@ class RestedScript {
   /// Example:
   /// include("scripts.html");
 
-  String f_set(String scriptargument, Arguments args) {
+  String f_set(String scriptargument, int pid) {
     debug("f_set()");
     StringTools argparser = new StringTools(scriptargument);
     argparser.moveTo(',');
     String key = argparser.getAllBeforePosition();
     String value = argparser.getAllAfterPosition();
-    args.setmap[key] = value;
+    pman.processes[pid].args.setmap[key] = value;
     return "";
   }
 
@@ -415,10 +449,11 @@ class RestedScript {
   ///
   /// Example:
   ///
-  String f_args(String scriptargument, Arguments args) {
+  String f_args(String scriptargument, int pid) {
     debug("f_args()");
-    if (args.args.containsKey(scriptargument)) {
-      return args.args[scriptargument].toString();
+    //Arguments args = pman.processes[pid].args;
+    if (pman.processes[pid].args.args.containsKey(scriptargument)) {
+      return pman.processes[pid].args.args[scriptargument].toString();
     } else {
       return "";
     }
@@ -475,9 +510,8 @@ class RestedScript {
     return document.join();
   }
 
-  Future<String> processLines(
-      List<String> lines, Arguments args) async {
-        debug("processLines()");
+  Future<String> processLines(List<String> lines, int pid) async {
+    debug("processLines()");
     String document = removeComments(lines);
     document = await wrapDocument(document);
     List<String> rs_blocks = [];
@@ -512,7 +546,7 @@ class RestedScript {
 
 
           //List<dynamic> thelist = args.get(listname);
-          var thelist = args.get(listname);
+          var thelist = pman.processes[pid].args.get(listname);
             int i = 0;
             while (i < thelist.length) {
               String newblock =
@@ -561,7 +595,7 @@ class RestedScript {
       if (block != null) {
         if (block.contains(';')) {
           List<String> command_list = block.split(';');
-          String result = await doCommands(command_list, args);
+          String result = await doCommands(command_list, pid);
           String codeblocktag = "{%" + i.toString() + "%}";
           document = document.replaceAll(codeblocktag, result);
         }

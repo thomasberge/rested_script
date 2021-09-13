@@ -11,6 +11,31 @@ class Arguments {
     _map[key] = value;
   }
 
+  void setString(String key, String value) {
+    _varNames[key] = "String";
+    _map[key] = value;
+  }
+
+  void setInt(String key, int value) {
+    _varNames[key] = "Int";
+    _map[key] = value;
+  }
+
+  void setBool(String key, bool value) {
+    _varNames[key] = "Bool";
+    _map[key] = value;
+  }
+
+  void setList(String key, List<dynamic> value) {
+    _varNames[key] = "List";
+    _map[key] = value;
+  }
+
+  void setMap(String key, Map<String, dynamic> value) {
+    _varNames[key] = "Map";
+    _map[key] = value;
+  } 
+
   dynamic get(String key) {
     if (_map.containsKey(key)) {
       return _map[key];
@@ -51,18 +76,5 @@ class Arguments {
     cursor.deleteAllFromPosition();
     //print("path=" + path);
     //print("directoryPath=" + cursor.data);
-  }
-
-  void setBool(String key, bool value) {
-    boolmap[key] = value;
-  }
-
-  bool getBool(String key) {
-    if (boolmap.containsKey(key)) {
-      return boolmap[key];
-    } else {
-      print("Key " + key + " does not exist in rscript boolmap.");
-      return false;
-    }
   }
 }

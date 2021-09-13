@@ -1,5 +1,6 @@
 import 'package:string_tools/string_tools.dart';
 
+import 'processes.dart';
 import 'io.dart' as io;
 import 'arguments.dart';
 
@@ -24,11 +25,11 @@ String isSupportedFunction(String data) {
   return supported;
 }
 
-Future<String> download(String argument, Arguments args) async {
+Future<String> download(String argument, int pid) async {
   return(await io.downloadTextFile(argument));
 }
 
-String flag(String argument, Arguments args) {
+String flag(String argument, int pid) {
   argument = argument.replaceAll('"', '');
   String filetype = argument.split('.')[1];
 
@@ -40,7 +41,7 @@ String flag(String argument, Arguments args) {
   }
 }
 
-Future<String> include(String argument, Arguments args) async {
+Future<String> include(String argument, int pid) async {
   argument = argument.replaceAll('"', '');
   List<String> split = argument.split('.');
   if (split.length > 1) {
@@ -60,7 +61,7 @@ Future<String> include(String argument, Arguments args) async {
   }
 }
 
-String echo(String argument, Arguments args) {
+String echo(String argument, int pid) {
   StringTools fparser = new StringTools(argument);
   String output = "";
   bool run = true;
@@ -79,8 +80,8 @@ String echo(String argument, Arguments args) {
         run = false;
       }
     } else {
-      if(args.get(argument).toString() != "%KEYDOESNOTEXIST%") {
-        output = args.get(argument).toString();
+      if(pman.processes[pid].args.get(argument).toString() != "%KEYDOESNOTEXIST%") {
+        output = pman.processes[pid].args.get(argument).toString();
         run = false;
       } else {
         print("Error: print missing quote(s) inside parentheses.\r\n print(" +
@@ -93,17 +94,24 @@ String echo(String argument, Arguments args) {
   return (output);
 }
 
-void debug(String argument, Arguments args) {
-  StringTools cursor = new StringTools(argument);  
-  String output = cursor.getQuotedString();
-  print("\u001b[31m" + output + "\u001b[0m");
+void debug(String argument, int pid) {
+  StringTools cursor = new StringTools(argument);
+  cursor.data = cursor.data.substring("debug".length);
+  cursor.deleteEdges();
+  if(cursor.edgesIs('"')) {
+    String output = cursor.getQuotedString();
+    print("\u001b[31m" + output + "\u001b[0m");
+  } else {
+    String output = pman.processes[pid].args.get(cursor.data).toString();
+    print("\u001b[31m" + output + "\u001b[0m");
+  }
 }
 
-void variable(String argument, Arguments args) {
+void variable(String argument, int pid) {
   print("var argument=" + argument);
 }
 
-String map(String argument, Arguments args) {
+String map(String argument, int pid) {
   print("map function called");
   return "";
 }

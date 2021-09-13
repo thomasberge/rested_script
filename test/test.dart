@@ -48,12 +48,18 @@ main() async {
   } else {
     print("{{foreach}}\t\t\t\t[\u001b[32mOK\u001b[0m]");  
   }
-
+/*
   if(await test_map()) {
     print("Map[]\t\t\t\t[\u001b[31mFailed\u001b[0m]");
   } else {
     print("Map[]\t\t\t\t[\u001b[32mOK\u001b[0m]");  
   } 
+*/
+  if(await test_varDeclarations()) {
+    print("variable declarations\t\t\t[\u001b[31mFailed\u001b[0m]");
+  } else {
+    print("variable declarations\t\t\t[\u001b[32mOK\u001b[0m]");  
+  }
 
 }
 
@@ -147,7 +153,6 @@ Future<bool> test_foreach() async {
   if(result == "123456789") {
     bugs = false;
   }
-  print(result);
   return bugs;
 }
 
@@ -172,5 +177,16 @@ Future<bool> test_map() async {
     bugs = false;
   }
   print(args.getVarTable());
+  return bugs;
+}
+
+Future<bool> test_varDeclarations() async {
+  bool bugs = true;
+  RestedScript restedscript = RestedScript(root: "/app/bin/pages/");
+  String result = await restedscript.createDocument("varDeclarations.html");
+  if(result == "The movie Knives Out has a runtime of 135 minutes") {
+    bugs = false;
+  }
+  print(result);
   return bugs;
 }
