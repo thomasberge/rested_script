@@ -25,11 +25,11 @@ String isSupportedFunction(String data) {
   return supported;
 }
 
-Future<String> download(String argument, int pid) async {
+Future<String> download(String argument, int _pid) async {
   return(await io.downloadTextFile(argument));
 }
 
-String flag(String argument, int pid) {
+String flag(String argument, int _pid) {
   argument = argument.replaceAll('"', '');
   String filetype = argument.split('.')[1];
 
@@ -41,7 +41,7 @@ String flag(String argument, int pid) {
   }
 }
 
-Future<String> include(String argument, int pid) async {
+Future<String> include(String argument, int _pid) async {
   argument = argument.replaceAll('"', '');
   List<String> split = argument.split('.');
   if (split.length > 1) {
@@ -61,7 +61,7 @@ Future<String> include(String argument, int pid) async {
   }
 }
 
-String echo(String argument, int pid) {
+String echo(String argument, int _pid) {
   StringTools fparser = new StringTools(argument);
   String output = "";
   bool run = true;
@@ -80,8 +80,8 @@ String echo(String argument, int pid) {
         run = false;
       }
     } else {
-      if(pman.processes[pid].args.get(argument).toString() != "%KEYDOESNOTEXIST%") {
-        output = pman.processes[pid].args.get(argument).toString();
+      if(pman.processes[_pid].args.get(argument).toString() != "%KEYDOESNOTEXIST%") {
+        output = pman.processes[_pid].args.get(argument).toString();
         run = false;
       } else {
         print("Error: print missing quote(s) inside parentheses.\r\n print(" +
@@ -94,7 +94,7 @@ String echo(String argument, int pid) {
   return (output);
 }
 
-void debug(String argument, int pid) {
+void debug(String argument, int _pid) {
   StringTools cursor = new StringTools(argument);
   cursor.data = cursor.data.substring("debug".length);
   cursor.deleteEdges();
@@ -102,16 +102,16 @@ void debug(String argument, int pid) {
     String output = cursor.getQuotedString();
     print("\u001b[31m" + output + "\u001b[0m");
   } else {
-    String output = pman.processes[pid].args.get(cursor.data).toString();
+    String output = pman.processes[_pid].args.get(cursor.data).toString();
     print("\u001b[31m" + output + "\u001b[0m");
   }
 }
 
-void variable(String argument, int pid) {
+void variable(String argument, int _pid) {
   print("var argument=" + argument);
 }
 
-String map(String argument, int pid) {
+String map(String argument, int _pid) {
   print("map function called");
   return "";
 }

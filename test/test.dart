@@ -55,6 +55,7 @@ main() async {
     print("Map[]\t\t\t\t[\u001b[32mOK\u001b[0m]");  
   } 
 */
+
   if(await test_varDeclarations()) {
     print("variable declarations\t\t\t[\u001b[31mFailed\u001b[0m]");
   } else {

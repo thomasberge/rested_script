@@ -4,13 +4,64 @@
 
 ### How it works
 
-The RestedScript engine is quite simple; you pass it a filepath and you receive a string. The string represents the text content of the file in the filepath, except the RestedScript in the file has been processed.
-
-It is simple to set up. You instantiate a RestedScript object and set its root directory. You can then - relative to its root directory, pass it file paths to text file containing RestedScript.
+The RestedScript engine is quite simple; you pass it a filepath and you receive a string. It is simple to set up. You instantiate a RestedScript object and set its root directory. 
 
 ```dart
 RestedScript rscript = RestedScript(root: "/app/bin/resources/");
 ```
+
+You can then - relative to its root directory, pass it file paths to text files containing RestedScript. The string you get in the result are the file with its processed content.
+
+```dart
+String index_page = await rscript.createDocument("index.html");
+```
+
+### By Example
+
+##### Instantiate variables
+
+```
+<?rs 
+    String myString = "This is a string.";
+    Int myWholeNumber = 800;
+    Double myNumberWithDecimals = 800.85;
+    Bool theTruth = false;
+    List someList = [myString, myWholeNumber, myNumberWithDecimals, theTruth];
+    Map mapToNowhere = { "key1": "value", "key2": { "key3": 3, "key4": false }}
+?>
+```
+
+##### Calculations and manipulations
+```
+<?rs 
+    Int number = 10;
+    Int anotherNumber = 5.1 * number + (15 * -1(5));
+    anotherNumber = anotherNumber / 2;
+    String word = "cool";
+    String text = "This is " + word + "!";
+?>
+```
+
+##### Print/Echo in file
+```
+<?rs
+    print("Print this sentence in the document");
+    String andThis = "And print this sentence as well.");
+    echo(andThis);
+?>
+```
+
+##### Download text
+```
+<?rs
+    String readme = download("https://raw.githubusercontent.com/thomasberge/rested_script/main/README.md");
+    echo(readme);
+    download("https://raw.githubusercontent.com/thomasberge/rested_script/main/README.md");
+?>
+```
+
+
+# OLD, PERHAPS NOT RELEVANT DOCUMENTATION BELOW
 
 RestedScript comes in two flavors; a nested language for logical operations and a series of specific document manipulation verbs. The language needs to be expressed within the ```<?rs``` start and ```?>``` end tags within the document. Start and end tags can appear many times within a document, but each start must always be closed with an end tag. Whitespace within the tags are ignored.
 

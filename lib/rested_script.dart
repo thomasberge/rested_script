@@ -16,6 +16,22 @@ import 'src/arguments.dart';
 export 'src/arguments.dart';
 import 'src/processes.dart';
 
+/*
+  createDocument()
+    pid = pman.createProcess(args)
+    parse(filepath, pid)
+      processLines(lines, pid)
+        doc = removeComments(lines)
+        doc = wrapDocument(doc, pid)
+        doc = processForEach(doc, pid)
+        doc = processRSTags(doc, pid)
+          doCommands(rstag, pid)
+            ...
+        return doc
+      return doc
+    return doc
+*/
+
 bool debugEnabled = false;
 void debug(String message) {
   if(debugEnabled) {
@@ -120,11 +136,11 @@ class RestedScript {
       args = Arguments();
     }
 
-    int pid = pman.createProcess(args);
-    String doc = await parse(filepath, pid);
+    int _pid = pman.createProcess(args);
+    String doc = await parse(filepath, _pid);
 
     if (flag != "") {
-      doc = await parse("flagsites/" + flag, pid);
+      doc = await parse("flagsites/" + flag, _pid);
     }
     return doc;
   }
@@ -179,13 +195,13 @@ class RestedScript {
     return data;
   }
 
-  Future<String> parse(String filepath, int pid, {String? externalfile = null}) async {
+  Future<String> parse(String filepath, int _pid, {String? externalfile = null}) async {
         debug("parse()()");
     if (filepath != "") {
       try {
         File data = new File(root + filepath);
         List<String> lines = data.readAsLinesSync(encoding: utf8);
-        return (await processLines(lines, pid));
+        return (await processLines(lines, _pid));
       } on FileSystemException {
         print("Error reading " + root + filepath);
         return ("");
@@ -193,13 +209,13 @@ class RestedScript {
     } else if (externalfile != null) {
       LineSplitter ls = new LineSplitter();
       List<String> lines = ls.convert(externalfile);
-      return (await processLines(lines, pid));
+      return (await processLines(lines, _pid));
     } else {
       return "";
     }
   }
 
-  Future<String> doCommands(List<String> commands, int pid) async {
+  Future<String> doCommands(List<String> commands, int _pid) async {
     debug("doCommands()");
     String data = "";
 
@@ -226,9 +242,9 @@ class RestedScript {
               String scriptarguments = cparser.getSelection();
               if (scriptarguments != null) {
                 List<String> arglist = scriptarguments.split('|');
-                if (pman.processes[pid].args.setmap.containsKey(key)) {
+                if (pman.processes[_pid].args.setmap.containsKey(key)) {
                   int i = 0;
-                  String constructed_string = pman.processes[pid].args.setmap[key];
+                  String constructed_string = pman.processes[_pid].args.setmap[key];
                   for (String replacement in arglist) {
                     constructed_string = constructed_string.replaceAll(
                         ('\$' + i.toString()), replacement);
@@ -245,8 +261,8 @@ class RestedScript {
               }
             } else {
               String key = cparser.data.substring(1);
-              if (pman.processes[pid].args.setmap.containsKey(key)) {
-                data = data + pman.processes[pid].args.setmap[key];
+              if (pman.processes[_pid].args.setmap.containsKey(key)) {
+                data = data + pman.processes[_pid].args.setmap[key];
               } else {
                 print("Key >" + key + "< not in setmap.");
               }
@@ -254,7 +270,7 @@ class RestedScript {
           } else {
             String function = functions.isSupportedFunction(cparser.data);
             //if (function != "%NOTSUPPORTED%") {
-              data = await doFunctions(function, cparser.data, pid, data);
+              data = await doFunctions(function, cparser.data, _pid, data);
             //} 
             /* else {
               String variabletype = variables.isVariableDeclaration(cparser.data);
@@ -302,11 +318,11 @@ class RestedScript {
             String scriptargument = cparser.getSelection();
 
             if (scriptfunction == "set") {
-              data = data + f_set(scriptargument, pid);
+              data = data + f_set(scriptargument, _pid);
             } else if (scriptfunction == "args") {
-              data = data + f_args(scriptargument, pid);
+              data = data + f_args(scriptargument, _pid);
             }else if (scriptfunction == "var") {
-              functions.variable(scriptargument, pid);
+              functions.variable(scriptargument, _pid);
             }
           }
         }
@@ -316,7 +332,7 @@ class RestedScript {
   }
 
   // NEW FUNCTIONS METHOD
-  Future<String> doFunctions(String function, String cursordata, int pid, data) async {
+  Future<String> doFunctions(String function, String cursordata, int _pid, data) async {
 
     if (function != "%NOTSUPPORTED%") {
       StringTools cursor = StringTools(cursordata);
@@ -324,9 +340,9 @@ class RestedScript {
 
         case "include": {
           String filepath = cursor.getQuotedString();
-          String file = await functions.include(filepath, pid);
+          String file = await functions.include(filepath, _pid);
           if (file != "") {
-            String processed_file = await parse(file, pid);
+            String processed_file = await parse(file, _pid);
             data = data + processed_file;
           }
         } 
@@ -335,10 +351,10 @@ class RestedScript {
         case "print": {
           if(cursor.data.contains('"')) {
             String string = cursor.getQuotedString();
-            data = data + functions.echo('"' + string + '"', pid);
+            data = data + functions.echo('"' + string + '"', _pid);
           } else {
             String variable = cursor.getFromTo("(", ")");
-            data = data + functions.echo(variable, pid);
+            data = data + functions.echo(variable, _pid);
           }
         } 
         break;
@@ -346,17 +362,17 @@ class RestedScript {
         case "echo": { 
           if(cursor.data.contains('"')) {
             String string = cursor.getQuotedString();
-            data = data + functions.echo('"' + string + '"', pid);
+            data = data + functions.echo('"' + string + '"', _pid);
           } else {
             String variable = cursor.getFromTo("(", ")");
-            data = data + functions.echo(variable, pid);
+            data = data + functions.echo(variable, _pid);
           }
         }
         break;  
 
         case "flag": {
           String file = cursor.getQuotedString();
-          String flagsite = functions.flag(file, pid);
+          String flagsite = functions.flag(file, _pid);
           if(flagsite != "unsupported") {
             flag = flagsite;
           }
@@ -365,8 +381,8 @@ class RestedScript {
 
         case "download": {
           String url = cursor.getQuotedString();
-          String file = await functions.download('"' + url + '"', pid);
-          String processed_file = await parse("", pid, externalfile: file);
+          String file = await functions.download('"' + url + '"', _pid);
+          String processed_file = await parse("", _pid, externalfile: file);
           data = data + processed_file;
         } 
         break;
@@ -375,7 +391,7 @@ class RestedScript {
           
           //String message = cursor.getQuotedString();
           //functions.debug('"' + message + '"', pid);
-          functions.debug(cursor.data, pid);
+          functions.debug(cursor.data, _pid);
         } 
         break;
 
@@ -384,21 +400,36 @@ class RestedScript {
       String variableType = variables.isVariableDeclaration(cursordata);
       //print("Variable type=" + variableType + "<");
       //print("Data: " + cursordata);
-      if( variableType != "%NOTSUPPORTED%"){
+      if(variableType != "%NOTSUPPORTED%") {
         switch(variableType) {
 
         case "String": {
-          variables.initString(pid, cursordata);
+          variables.initString(_pid, cursordata);
         }
         break;
 
         case "Int": {
-          variables.initInt(pid, cursordata);
+          variables.initInt(_pid, cursordata);
         }
         break;
 
         case "Bool": {
-          variables.initBool(pid, cursordata);
+          variables.initBool(_pid, cursordata);
+        }
+        break;
+
+        case "Double": {
+          variables.initDouble(_pid, cursordata);
+        }
+        break;
+
+        case "List": {
+          variables.initList(_pid, cursordata);
+        }
+        break;
+
+        case "Map": {
+          variables.initMap(_pid, cursordata);
         }
         break;
 /*
@@ -425,6 +456,36 @@ class RestedScript {
         break;*/
 
         }
+      } else {
+        // Check if it is a variable name
+        String name = cursordata.split(new RegExp(r"[ =]"))[0];
+        if(pman.processes[_pid].args.isVar(name)) {
+          String type = pman.processes[_pid].args.getType(name);
+          switch(type) {
+            case "Int": {
+              variables.updateInt(_pid, name, cursordata);
+            }
+            break;
+            case "String": {
+              variables.updateString(_pid, name, cursordata);
+            }
+            break;
+            case "Double": {
+
+            }
+            break;
+            case "List": {
+
+            }
+            break;
+            case "Map": {
+
+            }
+            break;
+          }
+        } else {
+          print("Error: Unknown command " + cursordata);
+        }
       }
     }
     return data;
@@ -435,13 +496,13 @@ class RestedScript {
   /// Example:
   /// include("scripts.html");
 
-  String f_set(String scriptargument, int pid) {
+  String f_set(String scriptargument, int _pid) {
     debug("f_set()");
     StringTools argparser = new StringTools(scriptargument);
     argparser.moveTo(',');
     String key = argparser.getAllBeforePosition();
     String value = argparser.getAllAfterPosition();
-    pman.processes[pid].args.setmap[key] = value;
+    pman.processes[_pid].args.setmap[key] = value;
     return "";
   }
 
@@ -449,11 +510,11 @@ class RestedScript {
   ///
   /// Example:
   ///
-  String f_args(String scriptargument, int pid) {
+  String f_args(String scriptargument, int _pid) {
     debug("f_args()");
     //Arguments args = pman.processes[pid].args;
-    if (pman.processes[pid].args.args.containsKey(scriptargument)) {
-      return pman.processes[pid].args.args[scriptargument].toString();
+    if (pman.processes[_pid].args.args.containsKey(scriptargument)) {
+      return pman.processes[_pid].args.args[scriptargument].toString();
     } else {
       return "";
     }
@@ -510,15 +571,9 @@ class RestedScript {
     return document.join();
   }
 
-  Future<String> processLines(List<String> lines, int pid) async {
-    debug("processLines()");
-    String document = removeComments(lines);
-    document = await wrapDocument(document);
-    List<String> rs_blocks = [];
-    StringTools dparser = new StringTools(document);
+  String processForEach(String data, int _pid) {
+    StringTools dparser = StringTools(data);
     bool run = true;
-
-    // process <% %> tags
     while (run) {
       String block;
 
@@ -546,7 +601,7 @@ class RestedScript {
 
 
           //List<dynamic> thelist = args.get(listname);
-          var thelist = pman.processes[pid].args.get(listname);
+          var thelist = pman.processes[_pid].args.get(listname);
             int i = 0;
             while (i < thelist.length) {
               String newblock =
@@ -563,9 +618,14 @@ class RestedScript {
       }
     }
 
-    document = dparser.data;
-    dparser = new StringTools(document);
-    run = true;
+    return dparser.data;
+  }
+
+  Future<String> processRSTags(String data, int _pid) async {
+    List<String> rs_blocks = [];
+    StringTools dparser = new StringTools(data);
+
+    bool run = true;
 
     // process <?rs ?> tags
     while (run) {
@@ -588,14 +648,14 @@ class RestedScript {
       }
     }
 
-    document = dparser.data;
+    String document = dparser.data;
 
     int i = 0;
     for (String block in rs_blocks) {
       if (block != null) {
         if (block.contains(';')) {
           List<String> command_list = block.split(';');
-          String result = await doCommands(command_list, pid);
+          String result = await doCommands(command_list, _pid);
           String codeblocktag = "{%" + i.toString() + "%}";
           document = document.replaceAll(codeblocktag, result);
         }
@@ -603,6 +663,15 @@ class RestedScript {
       i++;
     }
 
+    return document;
+  }
+
+  Future<String> processLines(List<String> lines, int _pid) async {
+    debug("processLines()");
+    String document = removeComments(lines);
+    document = await wrapDocument(document);
+    document = processForEach(document, _pid);
+    document = await processRSTags(document, _pid);
     return document;
   }
 }
