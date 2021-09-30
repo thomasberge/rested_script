@@ -1,7 +1,8 @@
 import 'processes.dart';
 import 'package:string_tools/string_tools.dart';
+import 'sheets.dart';
 
-List<String> supportedVariableTypes = ["Map", "String", "Int", "List", "Bool"];
+List<String> supportedVariableTypes = ["Map", "String", "Int", "List", "Bool", "Double", "Sheet"];
 
 RegExp keyFormat = RegExp(r"^[a-zA-Z0-9_-]*$");
 
@@ -162,7 +163,7 @@ String collapseParentheses(String data) {
   bool run = true;
   List<String> patentheses = ['(', ')'];
   bool lookingForClosing = false;
-  print("cursordata=" + cursor.data);
+  //print("cursordata=" + cursor.data);
 
 
   while(run) {
@@ -447,4 +448,11 @@ String combineToOneString(int _pid, String _data) {
 void initList(int _pid, String data) {
   StringTools cursor = StringTools(data.substring("List ".length));
 
+}
+
+
+/* --------------- SHEETS ----------------- */
+
+void initSheet(int _pid, String data) {
+  StringTools cursor = StringTools(data);
 }

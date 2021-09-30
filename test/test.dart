@@ -48,13 +48,6 @@ main() async {
   } else {
     print("{{foreach}}\t\t\t\t[\u001b[32mOK\u001b[0m]");  
   }
-/*
-  if(await test_map()) {
-    print("Map[]\t\t\t\t[\u001b[31mFailed\u001b[0m]");
-  } else {
-    print("Map[]\t\t\t\t[\u001b[32mOK\u001b[0m]");  
-  } 
-*/
 
   if(await test_varDeclarations()) {
     print("variable declarations\t\t\t[\u001b[31mFailed\u001b[0m]");
@@ -62,6 +55,17 @@ main() async {
     print("variable declarations\t\t\t[\u001b[32mOK\u001b[0m]");  
   }
 
+  if(await test_comments()) {
+    print("comments\t\t\t\t[\u001b[31mFailed\u001b[0m]");
+  } else {
+    print("comments\t\t\t\t[\u001b[32mOK\u001b[0m]");  
+  }
+
+  if(await test_sheet()) {
+    print("sheet\t\t\t\t\t[\u001b[31mFailed\u001b[0m]");
+  } else {
+    print("sheet\t\t\t\t\t[\u001b[32mOK\u001b[0m]");  
+  }
 }
 
 Future<bool> test_include() async {
@@ -186,6 +190,26 @@ Future<bool> test_varDeclarations() async {
   RestedScript restedscript = RestedScript(root: "/app/bin/pages/");
   String result = await restedscript.createDocument("varDeclarations.html");
   if(result == "The movie Knives Out has a runtime of 135 minutes") {
+    bugs = false;
+  }
+  return bugs;
+}
+
+Future<bool> test_comments() async {
+  bool bugs = true;
+  RestedScript restedscript = RestedScript(root: "/app/bin/pages/");
+  String result = await restedscript.createDocument("comments.html");
+  if(result == "sneakysolidsnake") {
+    bugs = false;
+  }
+  return bugs;
+}
+
+Future<bool> test_sheet() async {
+  bool bugs = true;
+  RestedScript restedscript = RestedScript(root: "/app/bin/pages/");
+  String result = await restedscript.createDocument("sheet.html");
+  if(result == "?") {
     bugs = false;
   }
   print(result);

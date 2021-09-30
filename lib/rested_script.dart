@@ -432,6 +432,11 @@ class RestedScript {
           variables.initMap(_pid, cursordata);
         }
         break;
+
+        case "Sheet": {
+          variables.initSheet(_pid, cursordata);
+        }
+        break;
 /*
         case "Map": {
           List<String> values = [" ", "["];
@@ -544,8 +549,40 @@ class RestedScript {
     bool rs = false;
 
     int i = 0;
+
     for (var line in lines) {
       i++;
+
+      // Lines with both <?rs and ?> does currently not support comments
+
+      if(rs = false) {
+        if(line.contains("<?rs")) {
+          rs = true;
+          StringTools cursor = StringTools(line);
+          cursor.moveTo("<?rs");
+          if(cursor.moveTo('//')) {
+            cursor.startSelection();
+            cursor.moveToEnd();
+            cursor.stopSelection();
+            cursor.deleteSelection();
+            line = cursor.data;
+          }
+        }
+      } else {
+        if(line.contains("?>")){
+          rs = false;
+        } else {
+          StringTools cursor = StringTools(line);
+          if(cursor.moveTo('//')) {
+            cursor.startSelection();
+            cursor.moveToEnd();
+            cursor.stopSelection();
+            cursor.deleteSelection();
+            line = cursor.data;
+          }          
+        }
+      }
+
       if (i < lines.length) {
         document.add(line + "\n");
       } else {
@@ -658,6 +695,9 @@ class RestedScript {
           String result = await doCommands(command_list, _pid);
           String codeblocktag = "{%" + i.toString() + "%}";
           document = document.replaceAll(codeblocktag, result);
+        } else {  // Empty rs tags like such <?rs ?>
+          String codeblocktag = "{%" + i.toString() + "%}";
+          document = document.replaceAll(codeblocktag, "");
         }
       }
       i++;

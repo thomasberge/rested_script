@@ -1,4 +1,4 @@
-# RestedScript v0.4.0
+# RestedScript v0.5.0
 
 ### Currently being organized, restructured and changed. Nothing to see here yet, move along.
 
@@ -17,6 +17,15 @@ String index_page = await rscript.createDocument("index.html");
 ```
 
 ### By Example
+
+##### Start/End tag, comments, functioncall
+
+```
+I will be disregarded <?rs 
+    // I am only a comment and will also be disregarded.
+    print("I will be processed!");
+?> so will I.
+```
 
 ##### Instantiate variables
 
