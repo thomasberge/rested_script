@@ -1,10 +1,10 @@
 import 'package:string_tools/string_tools.dart';
-
+import 'debug.dart';
 import 'processes.dart';
 import 'io.dart' as io;
 import 'arguments.dart';
 
-List<String> supportedFunctions = ["include", "print", "echo", "flag", "debug", "download"];
+List<String> supportedFunctions = ["include", "print", "echo", "flag", "debug", "download", "breakpoint"];
 
 String isSupportedFunction(String data) {
   int i = 0;
@@ -114,4 +114,8 @@ void variable(String argument, int _pid) {
 String map(String argument, int _pid) {
   print("map function called");
   return "";
+}
+
+void rsbreakpoint(int _pid) {
+  breakpoint(_pid);
 }

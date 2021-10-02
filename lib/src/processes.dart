@@ -24,6 +24,7 @@ class ProcessManager {
 }
 
 class Process {
+    String flag = "";
     Arguments args = Arguments();
     DateTime createdAt = DateTime.now();
 

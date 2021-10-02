@@ -1,4 +1,5 @@
 import 'package:string_tools/string_tools.dart';
+import 'sheets.dart';
 
 class Arguments {
   Map<String, String> _varNames = {};
@@ -24,6 +25,15 @@ class Arguments {
   }
 
   // ----------------- INSTANTIATE VARIABLES ----------------------
+
+  void setSheet(String _key, Sheet _value) {
+    if(isVar(_key) == false) {
+      _varNames[_key] = "Sheet";
+      _map[_key] = _value;
+    } else {
+      print("Error: Variable " + _key + " already declared.");
+    }
+  }
 
   void setString(String _key, String _value) {
     if(isVar(_key) == false) {

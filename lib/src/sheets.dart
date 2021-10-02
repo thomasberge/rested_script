@@ -11,11 +11,13 @@ class Sheet {
 
     int lines = 0;
 
-    void addColumn(String _type, {String header = "%NOTSET%"}) {
-        if(header == "%NOTSET%") {
-            header = "column" + sheet.length.toString();
-        }
-        headers.add(header);
+    Sheet();
+
+    void addColumn(String _header, String _type) {
+
+        // Add check if header exists, as it must be unique!
+
+        headers.add(_header);
 
         switch(_type) {
             case "String": {
@@ -50,9 +52,9 @@ class Sheet {
         }
     }
 
-    int addLine(List<String> _line){
-        for(int i = 0; i<_line.length; i++) {
-            if(_line[i] == "%NULL%") {
+    int addRowList(String _row){
+        for(int i = 0; i<_row.length; i++) {
+            if(_row[i] == "%NULL%") {
                 sheet[i].add("");
                 nullmap[i].add(false);
             }
@@ -60,5 +62,13 @@ class Sheet {
 
         lines++;
         return lines;
+    }
+
+    List<String> getRowByIndex(int _index) {
+        List<String> row = [];
+        for(int i = 0; i < sheet.length; i++) {
+            row.add(sheet[i][_index]);
+        }
+        return row;
     }
 }

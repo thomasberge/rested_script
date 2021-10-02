@@ -3,8 +3,10 @@ import 'package:string_tools/string_tools.dart';
 import 'sheets.dart';
 
 List<String> supportedVariableTypes = ["Map", "String", "Int", "List", "Bool", "Double", "Sheet"];
+List<String> supportedSheetColumnTypes = ["String"];
 
 RegExp keyFormat = RegExp(r"^[a-zA-Z0-9_-]*$");
+RegExp variableChars = new RegExp(r"^[a-z0-9_]*$", caseSensitive: false);
 
 String isVariableDeclaration(String data) {
   int i = 0;
@@ -22,7 +24,19 @@ String isVariableDeclaration(String data) {
   }
 
   return supported;
-} 
+}
+
+bool isSupportedSheetColumnType(String _type) {
+  int i = 0;
+  bool supported = false;
+  while(i < supportedSheetColumnTypes.length) {
+    if(_type == supportedSheetColumnTypes[i]) {
+      supported = true;
+    }
+    i++;
+  }
+  return supported;
+}
 
 RegExp intStringFormat = RegExp(r"^[0-9-+/*().]*$");
 
@@ -374,10 +388,6 @@ String replaceVariableNamesWithContent(int _pid, String data) {
   return cursor.data;
 }
 
-/*
-
-
-*/
 
 void initBool(int _pid, String data) {
   StringTools cursor = StringTools(data.substring("Bool ".length));
@@ -453,6 +463,76 @@ void initList(int _pid, String data) {
 
 /* --------------- SHEETS ----------------- */
 
-void initSheet(int _pid, String data) {
-  StringTools cursor = StringTools(data);
+void initSheet(int _pid, String _data) {
+  StringTools cursor = StringTools(_data);
+  cursor.deleteCharacters("Sheet ".length);
+  cursor.startSelection();
+  cursor.moveWhileRegex(variableChars);
+  cursor.stopSelection();
+  String key = cursor.getSelection();
+  cursor.deleteSelection();
+  cursor.reset();
+  cursor.data = cursor.data.split('=')[1].trim();
+  
+  if(cursor.data == '[]') {
+    pman.processes[_pid].args.setSheet(key, Sheet());
+    //pman.processes[_pid].args.debug();
+  } else {
+    Sheet sheet = Sheet();
+
+    if(cursor.firstIs('[') == false) {
+      print("Error: Sheet not instantiated correctly, please see documentation. " + cursor.data);
+      return;
+    } else if(cursor.lastIs(']') == false) {
+      print("Error: Sheet not instantiated correctly, please see documentation. " + cursor.data);
+      return;
+    }
+
+    // Bool: "active", String: "name"
+
+    cursor.deleteEdges();
+    cursor.data.trim();
+    List<String> columns = [];
+    bool run = true;
+
+    while(run) {
+      cursor.startSelection();
+      if(cursor.moveTo(':')) {
+        cursor.stopSelection();
+        String columnType = cursor.getSelection().trim();
+        if(isSupportedSheetColumnType(columnType)) {
+          cursor.moveTo('"');
+          cursor.stopSelection();
+          cursor.deleteSelection();
+          cursor.reset();
+          cursor.startSelection();
+          if(cursor.moveToNext('"')) {
+            cursor.move();
+            cursor.stopSelection();
+            cursor.deleteEdgesOfSelection();
+            String columnName = cursor.getSelection();
+            //print("columnName=" + columnName);
+            cursor.deleteSelection();
+            cursor.reset();
+            if(cursor.moveTo(',')) {
+              cursor.data = cursor.getAllAfterPosition();
+              cursor.reset();
+              sheet.addColumn(columnType, columnName);
+            }
+          } else {
+            print("Error: Sheet column name missing enclosing quotes. " + cursor.data);
+          }
+        } else {
+          print("Error: Unsupported column type " + columnType);
+          run = false;
+        }
+      } else {
+        //print("Exiting");
+        //print("Sheet data: " + cursor.data);
+        run = false;
+      }
+    }
+    pman.processes[_pid].args.setSheet(key, sheet);
+    //pman.processes[_pid].args.debug();
+  }
 }
