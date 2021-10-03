@@ -13,7 +13,7 @@ class Sheet {
 
     Sheet();
 
-    void addColumn(String _header, String _type) {
+    void addColumn(String _type, String _header) {
 
         // Add check if header exists, as it must be unique!
 
@@ -52,11 +52,14 @@ class Sheet {
         }
     }
 
-    int addRowList(String _row){
+    int addRow(List<String> _row){
         for(int i = 0; i<_row.length; i++) {
             if(_row[i] == "%NULL%") {
                 sheet[i].add("");
                 nullmap[i].add(false);
+            } else {
+                sheet[i].add(_row[i]);
+                nullmap[i].add(true);
             }
         }
 
@@ -64,11 +67,25 @@ class Sheet {
         return lines;
     }
 
-    List<String> getRowByIndex(int _index) {
+    List<String> getColumnByIndex(int _column) {
+        return sheet[_column];
+    }
+
+    List<String> getRowByIndex(int _row) {
         List<String> row = [];
         for(int i = 0; i < sheet.length; i++) {
-            row.add(sheet[i][_index]);
+            row.add(sheet[i][_row]);
         }
         return row;
+    }
+
+    String getCellByIndex(int _column, int _row) {
+        //print(sheet.toString());
+        //print("getCellByIndex(" + _column.toString() + ", " + _row.toString() + ");");
+        return sheet[_column][_row];
+    }
+
+    String toString(){
+        return sheet.toString();
     }
 }

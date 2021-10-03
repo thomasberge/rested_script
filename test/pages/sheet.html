@@ -1,13 +1,14 @@
 <?rs
     Sheet empty = [];
-    //empty.addColumn(String: "active");
-    //empty.addColumn(String: "name");
-    //empty.addRow(false, "Test");
+    sheet.addColumn(empty, String: "active");
+    sheet.addColumn(empty, String: "name");
+    sheet.addRow(empty, "False", "Test");
 
     Sheet apis = [String: "active", String: "name"];
-    //apis.addRow("nope", "My Test API");
+    sheet.addRow(apis, "nope", "My Test API");
 
-    //print("Row=" + apis[0]);
+    sheet.printRow(apis, 0);
+    sheet.printCell(apis, 0, 0);
     //print("Active=" + apis["active"][0]);
     //print("Name=" + apis[0][1]);
 ?>

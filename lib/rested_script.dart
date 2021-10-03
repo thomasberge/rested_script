@@ -16,6 +16,8 @@ import 'src/arguments.dart';
 export 'src/arguments.dart';
 import 'src/processes.dart';
 import 'src/debug.dart';
+import 'src/templating.dart';
+import 'src/comments.dart';
 
 /*
   createDocument()
@@ -33,12 +35,21 @@ import 'src/debug.dart';
     return doc
 */
 
-bool debugEnabled = false;
-void debug(String message) {
-  if(debugEnabled) {
-    print(message);
-  }
+/* -------- EXPERIMENTAL --------- */
+
+/*
+    result = calc;  
+
+    var name = 
+
+*/
+
+List<String> commandList() {
+
 }
+
+/* ----------------------- */
+
 
 class CodeBlock {
   int id;
@@ -58,12 +69,19 @@ class RestedScript {
 
   String root;
 
-  Future<String> createDocument(String filepath, {Arguments? args = null}) async {
+  Future<String> createDocument(String filepath, {Arguments? args = null, bool debug = false}) async {
     if(args == null) {
       args = Arguments();
     }
 
     int _pid = pman.createProcess(args);
+
+    if(debugEnabled) {
+      pman.processes[_pid].debugEnabled = true;
+    } else if(debug == true) {
+      pman.processes[_pid].debugEnabled = true;
+    }
+
     String doc = await parse(filepath, _pid);
 
     if (pman.processes[_pid].flag != "") {
@@ -72,58 +90,8 @@ class RestedScript {
     return doc;
   }
 
-  Future<String> wrapDocument(String data) async {
-    debug("wrapDocument()");
-    StringTools cursor = new StringTools(data);
-
-    // Gets both arguments (file and content id) and deletes the wrap function call from
-    // the document.
-    if(cursor.moveTo('{{wrap("')) {
-      cursor.deleteCharacters('{{wrap("'.length);
-      cursor.startSelection();
-      cursor.moveTo('")}}');
-      cursor.stopSelection();
-      String wrapArgs = cursor.getSelection();
-      cursor.deleteCharacters('")}}'.length);
-      cursor.deleteSelection();
-      data = cursor.data;
-
-      StringTools argsCursor = StringTools(wrapArgs);
-      if(argsCursor.moveTo('"')) {
-        argsCursor.startSelection();
-
-        if(argsCursor.moveToNext('"')) {
-          argsCursor.move();
-          argsCursor.stopSelection();
-          int separatorLength = argsCursor.getSelection().length;
-          argsCursor.deleteSelection();
-          argsCursor.move(characters: -separatorLength);
-          String fileRef = argsCursor.getAllBeforePosition();
-          String contentId = argsCursor.getAllFromPosition();
-
-          String fileData = await File(root + fileRef).readAsString();
-          if(fileData.contains('{{content("' + contentId + '")}}')) {
-            List<String> fileDataSplit = fileData.split('{{content("' + contentId + '")}}');
-            if(fileDataSplit.length == 2) {
-              data = fileDataSplit[0] + data + fileDataSplit[1];
-            } else {
-              print('ERROR More than one contentId "' + contentId + '" in ' + root + fileRef);
-            }
-          } else {
-            print('ERROR Unable to locate contentId reference "' + contentId + '" in ' + root + fileRef);
-          }
-        } else {
-          print("ERROR Cannot parsing wrap() arguments: " + argsCursor.data + "\r\nwrap(string Filepath, string ContentId);");          
-        }
-      } else {
-        print("Error parsing wrap() arguments: " + argsCursor.data + "\r\nwrap(string Filepath, string ContentId);");
-      }
-    }
-    return data;
-  }
-
   Future<String> parse(String filepath, int _pid, {String? externalfile = null}) async {
-        debug("parse()()");
+        debug(_pid, "parse()()");
     if (filepath != "") {
       try {
         File data = new File(root + filepath);
@@ -143,7 +111,7 @@ class RestedScript {
   }
 
   Future<String> doCommands(List<String> commands, int _pid) async {
-    debug("doCommands()");
+    debug(_pid, "doCommands()");
     String data = "";
 
     for (String command in commands) {
@@ -226,6 +194,7 @@ class RestedScript {
   Future<String> doFunctions(String function, String cursordata, int _pid, data) async {
 
     if (function != "%NOTSUPPORTED%") {
+      
       StringTools cursor = StringTools(cursordata);
       switch(function) {   
 
@@ -288,6 +257,119 @@ class RestedScript {
         } 
         break;
 
+        case "sheet.addColumn": {
+          StringTools cursor = StringTools(cursordata.substring("sheet.addColumn".length).trim());
+          cursor.deleteEdges();
+          cursor.startSelection();
+          cursor.moveTo(',');
+          cursor.stopSelection();
+          String key = cursor.getSelection().trim();
+
+          if(pman.processes[_pid].args.isVar(key)) {
+            if(pman.processes[_pid].args.getType(key) == "Sheet") {
+              cursor.move();
+              cursor.stopSelection();
+              cursor.deleteSelection();
+              cursor.reset();
+              cursor.data = cursor.data.trim();
+
+              String type = cursor.data.split(':')[0];
+
+              cursor.moveTo('"');
+              cursor.move();
+              cursor.startSelection();
+              cursor.moveToNext('"');
+              cursor.stopSelection();
+              String name = cursor.getSelection();
+
+              pman.processes[_pid].args.vars[key].addColumn(type, name);
+            } else {
+              print("Error: " + key + " is not of type Sheet");
+            }
+          } else {
+            print("Error: Unknown variable " + key);
+          }
+        }
+        break;
+
+        case "sheet.addRow": {
+          StringTools cursor = StringTools(cursordata.substring("sheet.addRow".length).trim());
+          cursor.deleteEdges();
+          cursor.data.trim();
+          bool run = true;
+          List<String> rowItems = [];
+
+          cursor.startSelection();
+          cursor.moveTo(',');
+          cursor.stopSelection();
+          String key = cursor.getSelection().trim();
+          cursor.deleteSelection();
+          cursor.reset();
+          
+          if(pman.processes[_pid].args.isVar(key)) {
+            while(run) {
+              if(cursor.moveTo('"')) {
+                cursor.startSelection();
+                cursor.moveToNext('"');
+                cursor.move();
+                cursor.stopSelection();
+                cursor.deleteEdgesOfSelection();
+                String value = cursor.getSelection();
+                cursor.deleteSelection();
+                cursor.reset();
+                if(value == ""){
+                  value = "%NULL%";
+                }
+                rowItems.add(value);
+              } else {
+                run = false;
+              }
+            }
+          
+            if(pman.processes[_pid].args.vars[key].headers.length == rowItems.length) {
+              pman.processes[_pid].args.vars[key].addRow(rowItems);
+              //print(pman.processes[_pid].args.vars[key].sheet.toString());
+            } else {
+              breakpoint(_pid);
+              print("Error: Tried to insert " + rowItems.length.toString() + " items into a " + 
+              pman.processes[_pid].args.vars[key].headers.length.toString() + "-column Sheet.");
+            }
+            
+            //print(rowItems.toString());
+          } else {
+            print("Error: Unknown variable " + key);
+          }
+
+        }
+        break;
+
+        case "sheet.printRow": {
+          StringTools cursor = StringTools(cursordata.substring("sheet.printRow".length).trim());
+          cursor.deleteEdges();
+          cursor.data.trim();
+          cursor.data = cursor.data.replaceAll(' ', '');
+
+          List<String> elements = cursor.data.split(',');
+          List<String> row = pman.processes[_pid].args.vars[elements[0]].getRowByIndex(int.parse(elements[1]));
+
+          //print(">" + row.toString() + "<");
+          data = data + row.toString();
+        }
+        break;
+
+        case "sheet.printCell": {
+          StringTools cursor = StringTools(cursordata.substring("sheet.printCell".length).trim());
+          cursor.deleteEdges();
+          cursor.data.trim();
+          cursor.data = cursor.data.replaceAll(' ', '');
+
+          List<String> elements = cursor.data.split(',');
+          String cell = pman.processes[_pid].args.vars[elements[0]].getCellByIndex(int.parse(elements[1]), int.parse(elements[2]));
+
+          //print(">" + cell + "<");
+          data = data + cell;
+        }
+        break;
       }
     } else {
       String variableType = variables.isVariableDeclaration(cursordata);
@@ -372,7 +454,7 @@ class RestedScript {
   /// include("scripts.html");
 
   String f_set(String scriptargument, int _pid) {
-    debug("f_set()");
+    debug(_pid, "f_set()");
     StringTools argparser = new StringTools(scriptargument);
     argparser.moveTo(',');
     String key = argparser.getAllBeforePosition();
@@ -382,122 +464,6 @@ class RestedScript {
   }
 
   bool comment_on = false;
-
-  String removeCommentsFromLine(String line) {
-    debug("removeCommentsFromLine()");
-    if (comment_on) {
-      line = "";
-    } else if (line.contains('//')) {
-      line = line.split('//')[0];
-    } else if (line.contains('/*')) {
-      comment_on = true;
-      line = line.split('/*')[0];
-    } else if (line.contains('*/')) {
-      comment_on = false;
-      line = line.split('*/')[0];
-    }
-    return line;
-  }
-
-  String removeComments(List<String> lines) {
-    debug("removeComments()");
-    List<String> document = [];
-    bool rs = false;
-
-    int i = 0;
-
-    for (var line in lines) {
-      i++;
-
-      // Lines with both <?rs and ?> does currently not support comments
-
-      if(rs = false) {
-        if(line.contains("<?rs")) {
-          rs = true;
-          StringTools cursor = StringTools(line);
-          cursor.moveTo("<?rs");
-          if(cursor.moveTo('//')) {
-            cursor.startSelection();
-            cursor.moveToEnd();
-            cursor.stopSelection();
-            cursor.deleteSelection();
-            line = cursor.data;
-          }
-        }
-      } else {
-        if(line.contains("?>")){
-          rs = false;
-        } else {
-          StringTools cursor = StringTools(line);
-          if(cursor.moveTo('//')) {
-            cursor.startSelection();
-            cursor.moveToEnd();
-            cursor.stopSelection();
-            cursor.deleteSelection();
-            line = cursor.data;
-          }          
-        }
-      }
-
-      if (i < lines.length) {
-        document.add(line + "\n");
-      } else {
-        document.add(line);
-      }
-    }
-
-    return document.join();
-  }
-
-  String processForEach(String data, int _pid) {
-    StringTools dparser = StringTools(data);
-    bool run = true;
-    while (run) {
-      String block;
-
-      // If the start of a forEach is found, select it and throw it into a new ST and get
-      // the key to the list. Then delete the forEach, return to the previous position and 
-      // start marking the block.
-      if (dparser.moveTo('{{foreach')) {
-        int prevPos = dparser.position;
-        dparser.startSelection();
-        dparser.moveTo('}}');
-        dparser.move(characters: 2);
-        dparser.stopSelection();
-        StringTools forEachParser = StringTools(dparser.getSelection());
-        String listname = forEachParser.getQuotedString();
-        dparser.deleteSelection();
-        dparser.position = prevPos;
-        dparser.startSelection();
-
-        if (dparser.moveTo('{{endforeach("' + listname + '")}}')) {
-          dparser.deleteCharacters(('{{endforeach("' + listname + '")}}').length);
-          dparser.stopSelection();
-          block = dparser.getSelection();
-          dparser.position = dparser.start_selection;
-          dparser.deleteSelection();
-
-
-          //List<dynamic> thelist = args.get(listname);
-          var thelist = pman.processes[_pid].args.get(listname);
-            int i = 0;
-            while (i < thelist.length) {
-              String newblock =
-                  block.replaceAll('{{element("' + listname + '")}}', thelist[i].toString());
-              dparser.insertAtPosition(newblock);
-              dparser.move(characters: newblock.length);
-              i++;
-            }            
-        } else {
-          print('Missing closing {{endforeach}}');
-        }
-      } else {
-        run = false;
-      }
-    }
-
-    return dparser.data;
-  }
 
   Future<String> processRSTags(String data, int _pid) async {
     List<String> rs_blocks = [];
@@ -548,9 +514,9 @@ class RestedScript {
   }
 
   Future<String> processLines(List<String> lines, int _pid) async {
-    debug("processLines()");
-    String document = removeComments(lines);
-    document = await wrapDocument(document);
+    debug(_pid, "processLines()");
+    String document = removeComments(_pid, lines);
+    document = await wrapDocument(_pid, document, root);
     document = processForEach(document, _pid);
     document = await processRSTags(document, _pid);
     return document;

@@ -25,6 +25,7 @@ class ProcessManager {
 
 class Process {
     String flag = "";
+    bool debugEnabled = false;
     Arguments args = Arguments();
     DateTime createdAt = DateTime.now();
 

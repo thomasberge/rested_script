@@ -4,24 +4,20 @@ import 'processes.dart';
 import 'io.dart' as io;
 import 'arguments.dart';
 
-List<String> supportedFunctions = ["include", "print", "echo", "flag", "debug", "download", "breakpoint"];
+List<String> supportedFunctions = ["include", "print", "echo", "flag", "debug", "download", "breakpoint", 
+"sheet.addColumn", "sheet.addRow", "sheet.printRow", "sheet.printCell"];
 
 String isSupportedFunction(String data) {
   int i = 0;
   String supported = "%NOTSUPPORTED%";
-  while(i < supportedFunctions.length) {
-    if (data.substring(0, supportedFunctions[i].length + 1) == supportedFunctions[i] + "(")
-    {
-      supported = supportedFunctions[i];
-      i = 1000;
+  for(int i = 0; i < supportedFunctions.length; i++) {
+    if(data.length >= supportedFunctions[i].length + 1) {
+      int width = supportedFunctions[i].length + 1;
+      if(data.substring(0, width) == supportedFunctions[i] + "(") {
+        supported = supportedFunctions[i];
+      }
     }
-    i++;
   }
-
-  if(supported == "%NOTSUPPORTED%") {
-    //print(data + " is NOT a supported function!");
-  }
-
   return supported;
 }
 

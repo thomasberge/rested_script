@@ -3,13 +3,13 @@ import 'sheets.dart';
 
 class Arguments {
   Map<String, String> _varNames = {};
-  Map _map = new Map<String, dynamic>();
+  Map vars = new Map<String, dynamic>();
 
   void set(String key, dynamic value) {
     if(value is Map) {
       _varNames[key] = "Map";
     }
-    _map[key] = value;
+    vars[key] = value;
   }
 
   List<String> getIntKeys() {
@@ -29,7 +29,7 @@ class Arguments {
   void setSheet(String _key, Sheet _value) {
     if(isVar(_key) == false) {
       _varNames[_key] = "Sheet";
-      _map[_key] = _value;
+      vars[_key] = _value;
     } else {
       print("Error: Variable " + _key + " already declared.");
     }
@@ -38,7 +38,7 @@ class Arguments {
   void setString(String _key, String _value) {
     if(isVar(_key) == false) {
       _varNames[_key] = "String";
-      _map[_key] = _value;
+      vars[_key] = _value;
     } else {
       print("Error: Variable " + _key + " already declared.");
     }
@@ -47,7 +47,7 @@ class Arguments {
   void setInt(String key, int value) {
     if(isVar(key) == false) {
       _varNames[key] = "Int";
-      _map[key] = value;
+      vars[key] = value;
     } else {
       print("Error: Variable " + key + " already declared.");
     }
@@ -56,7 +56,7 @@ class Arguments {
   void updateInt(String key, int value) {
     if(isVar(key) == true) {
       _varNames[key] = "Int";
-      _map[key] = value;
+      vars[key] = value;
     } else {
       print("Error: Integer " + key + " does not exist.");
     }
@@ -65,7 +65,7 @@ class Arguments {
   void setDouble(String key, int value) {
     if(isVar(key) == false) {
       _varNames[key] = "Double";
-      _map[key] = value;
+      vars[key] = value;
     } else {
       print("Error: Variable " + key + " already declared.");
     }
@@ -74,7 +74,7 @@ class Arguments {
   void setBool(String key, bool value) {
     if(isVar(key) == false) {
       _varNames[key] = "Bool";
-      _map[key] = value;
+      vars[key] = value;
     } else {
       print("Error: Variable " + key + " already declared.");
     }
@@ -83,7 +83,7 @@ class Arguments {
   void setList(String key, List<dynamic> value) {
     if(isVar(key) == false) {
       _varNames[key] = "List";
-      _map[key] = value;
+      vars[key] = value;
     } else {
       print("Error: Variable " + key + " already declared.");
     }
@@ -92,15 +92,15 @@ class Arguments {
   void setMap(String key, Map<String, dynamic> value) {
     if(isVar(key) == false) {
       _varNames[key] = "Map";
-      _map[key] = value;
+      vars[key] = value;
     } else {
       print("Error: Variable " + key + " already declared.");
     }
   }
 
   String getAsString(String key) {
-    if (_map.containsKey(key)) {
-      return _map[key].toString();
+    if (vars.containsKey(key)) {
+      return vars[key].toString();
     } else {
       print("Key " + key + " does not exist in rscript stringmap.");
       return "%KEYDOESNOTEXIST%";
@@ -108,8 +108,8 @@ class Arguments {
   }
 
   dynamic get(String key) {
-    if (_map.containsKey(key)) {
-      return _map[key];
+    if (vars.containsKey(key)) {
+      return vars[key];
     } else {
       print("Key " + key + " does not exist in rscript stringmap.");
       return "%KEYDOESNOTEXIST%";
@@ -147,7 +147,7 @@ class Arguments {
 
   double getDouble(String key) {
     if(isNumberVar(key)) {
-      return double.parse(_map[key]);
+      return double.parse(vars[key]);
     } else {
       print("Error: " + key + " is not of type Double");
       return 0.1;
@@ -155,7 +155,7 @@ class Arguments {
   }
 
   String getVarTable() {
-    return _map.toString();
+    return vars.toString();
   }
 
   void debug() {

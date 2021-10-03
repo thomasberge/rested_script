@@ -497,15 +497,18 @@ void initSheet(int _pid, String _data) {
 
     while(run) {
       cursor.startSelection();
+
       if(cursor.moveTo(':')) {
         cursor.stopSelection();
         String columnType = cursor.getSelection().trim();
+
         if(isSupportedSheetColumnType(columnType)) {
           cursor.moveTo('"');
           cursor.stopSelection();
           cursor.deleteSelection();
           cursor.reset();
           cursor.startSelection();
+
           if(cursor.moveToNext('"')) {
             cursor.move();
             cursor.stopSelection();
@@ -514,10 +517,11 @@ void initSheet(int _pid, String _data) {
             //print("columnName=" + columnName);
             cursor.deleteSelection();
             cursor.reset();
+            sheet.addColumn(columnType, columnName);
+
             if(cursor.moveTo(',')) {
               cursor.data = cursor.getAllAfterPosition();
               cursor.reset();
-              sheet.addColumn(columnType, columnName);
             }
           } else {
             print("Error: Sheet column name missing enclosing quotes. " + cursor.data);
