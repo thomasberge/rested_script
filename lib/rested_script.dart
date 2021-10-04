@@ -35,22 +35,6 @@ import 'src/comments.dart';
     return doc
 */
 
-/* -------- EXPERIMENTAL --------- */
-
-/*
-    result = calc;  
-
-    var name = 
-
-*/
-
-List<String> commandList() {
-
-}
-
-/* ----------------------- */
-
-
 class CodeBlock {
   int id;
   String data;
@@ -110,268 +94,18 @@ class RestedScript {
     }
   }
 
-  Future<String> doCommands(List<String> commands, int _pid) async {
-    debug(_pid, "doCommands()");
-    String data = "";
-
-    for (String command in commands) {
-      if (command != null) {
-        command = command.trim();
-        if (command != "") {
-
-          StringTools cparser = new StringTools(command);
-          if ('${cparser.data[0]}' == '\$') {
-            // if the character first is a $ ...
-            // set-function
-            if (command[command.length - 1] == ')') {
-              cparser.move();
-              cparser.startSelection();
-              cparser.moveTo('(');
-              cparser.stopSelection();
-              String key = cparser.getSelection();
-              cparser.move();
-              cparser.startSelection();
-              cparser.moveToEnd();
-              cparser.move(characters: -2);
-              cparser.stopSelection();
-              String scriptarguments = cparser.getSelection();
-              if (scriptarguments != null) {
-                List<String> arglist = scriptarguments.split('|');
-                if (pman.processes[_pid].args.setmap.containsKey(key)) {
-                  int i = 0;
-                  String constructed_string = pman.processes[_pid].args.setmap[key];
-                  for (String replacement in arglist) {
-                    constructed_string = constructed_string.replaceAll(
-                        ('\$' + i.toString()), replacement);
-                    i++;
-                  }
-                  data = data + constructed_string;
-                } else {
-                  print("Key >" + key + "< not in setmap.");
-                }
-              } else {
-                print("Set variable reffered to as function " +
-                    key +
-                    "() but does not provide any arguments. Either use without () or add argument.");
-              }
-            } else {
-              String key = cparser.data.substring(1);
-              if (pman.processes[_pid].args.setmap.containsKey(key)) {
-                data = data + pman.processes[_pid].args.setmap[key];
-              } else {
-                print("Key >" + key + "< not in setmap.");
-              }
-            }
-          } else {
-
-            String function = functions.isSupportedFunction(cparser.data);
-            data = await doFunctions(function, cparser.data, _pid, data);
-
-            // FUNCTIONCALLS
-            cparser.startSelection();
-            cparser.moveTo('(');
-            cparser.stopSelection();
-            String scriptfunction = cparser.getSelection();
-
-            cparser.move();
-            cparser.startSelection();
-            cparser.moveToEnd();
-            cparser.move(characters: -1);
-            cparser.stopSelection();
-            String scriptargument = cparser.getSelection();
-
-            if (scriptfunction == "set") {
-              data = data + f_set(scriptargument, _pid);
-            }
-          }
-        }
-      }
-    }
-    return data;
+  Future<String> processLines(List<String> lines, int _pid) async {
+    debug(_pid, "processLines()");
+    String document = removeComments(_pid, lines);
+    document = await wrapDocument(_pid, document, root);
+    document = processForEach(document, _pid);
+    document = await processRSTags(_pid, document);
+    return document;
   }
 
   // NEW FUNCTIONS METHOD
-  Future<String> doFunctions(String function, String cursordata, int _pid, data) async {
+  Future<String> doVariables(String function, String cursordata, int _pid, data) async {
 
-    if (function != "%NOTSUPPORTED%") {
-      
-      StringTools cursor = StringTools(cursordata);
-      switch(function) {   
-
-        case "breakpoint": {
-          breakpoint(_pid);
-        }
-        break;
-
-        case "include": {
-          String filepath = cursor.getQuotedString();
-          String file = await functions.include(filepath, _pid);
-          if (file != "") {
-            String processed_file = await parse(file, _pid);
-            data = data + processed_file;
-          }
-        } 
-        break;
-
-        case "print": {
-          if(cursor.data.contains('"')) {
-            String string = cursor.getQuotedString();
-            data = data + functions.echo('"' + string + '"', _pid);
-          } else {
-            String variable = cursor.getFromTo("(", ")");
-            data = data + functions.echo(variable, _pid);
-          }
-        } 
-        break;
-
-        case "echo": { 
-          if(cursor.data.contains('"')) {
-            String string = cursor.getQuotedString();
-            data = data + functions.echo('"' + string + '"', _pid);
-          } else {
-            String variable = cursor.getFromTo("(", ")");
-            data = data + functions.echo(variable, _pid);
-          }
-        }
-        break;  
-
-        case "flag": {
-          String file = cursor.getQuotedString();
-          String flagsite = functions.flag(file, _pid);
-          if(flagsite != "unsupported") {
-            pman.processes[_pid].flag = flagsite;
-          }
-        } 
-        break;
-
-        case "download": {
-          String url = cursor.getQuotedString();
-          String file = await functions.download('"' + url + '"', _pid);
-          String processed_file = await parse("", _pid, externalfile: file);
-          data = data + processed_file;
-        } 
-        break;
-
-        case "debug": {
-          functions.debug(cursor.data, _pid);
-        } 
-        break;
-
-        case "sheet.addColumn": {
-          StringTools cursor = StringTools(cursordata.substring("sheet.addColumn".length).trim());
-          cursor.deleteEdges();
-          cursor.startSelection();
-          cursor.moveTo(',');
-          cursor.stopSelection();
-          String key = cursor.getSelection().trim();
-
-          if(pman.processes[_pid].args.isVar(key)) {
-            if(pman.processes[_pid].args.getType(key) == "Sheet") {
-              cursor.move();
-              cursor.stopSelection();
-              cursor.deleteSelection();
-              cursor.reset();
-              cursor.data = cursor.data.trim();
-
-              String type = cursor.data.split(':')[0];
-
-              cursor.moveTo('"');
-              cursor.move();
-              cursor.startSelection();
-              cursor.moveToNext('"');
-              cursor.stopSelection();
-              String name = cursor.getSelection();
-
-              pman.processes[_pid].args.vars[key].addColumn(type, name);
-            } else {
-              print("Error: " + key + " is not of type Sheet");
-            }
-          } else {
-            print("Error: Unknown variable " + key);
-          }
-        }
-        break;
-
-        case "sheet.addRow": {
-          StringTools cursor = StringTools(cursordata.substring("sheet.addRow".length).trim());
-          cursor.deleteEdges();
-          cursor.data.trim();
-          bool run = true;
-          List<String> rowItems = [];
-
-          cursor.startSelection();
-          cursor.moveTo(',');
-          cursor.stopSelection();
-          String key = cursor.getSelection().trim();
-          cursor.deleteSelection();
-          cursor.reset();
-          
-          if(pman.processes[_pid].args.isVar(key)) {
-            while(run) {
-              if(cursor.moveTo('"')) {
-                cursor.startSelection();
-                cursor.moveToNext('"');
-                cursor.move();
-                cursor.stopSelection();
-                cursor.deleteEdgesOfSelection();
-                String value = cursor.getSelection();
-                cursor.deleteSelection();
-                cursor.reset();
-                if(value == ""){
-                  value = "%NULL%";
-                }
-                rowItems.add(value);
-              } else {
-                run = false;
-              }
-            }
-          
-            if(pman.processes[_pid].args.vars[key].headers.length == rowItems.length) {
-              pman.processes[_pid].args.vars[key].addRow(rowItems);
-              //print(pman.processes[_pid].args.vars[key].sheet.toString());
-            } else {
-              breakpoint(_pid);
-              print("Error: Tried to insert " + rowItems.length.toString() + " items into a " + 
-              pman.processes[_pid].args.vars[key].headers.length.toString() + "-column Sheet.");
-            }
-            
-            //print(rowItems.toString());
-          } else {
-            print("Error: Unknown variable " + key);
-          }
-
-        }
-        break;
-
-        case "sheet.printRow": {
-          StringTools cursor = StringTools(cursordata.substring("sheet.printRow".length).trim());
-          cursor.deleteEdges();
-          cursor.data.trim();
-          cursor.data = cursor.data.replaceAll(' ', '');
-
-          List<String> elements = cursor.data.split(',');
-          List<String> row = pman.processes[_pid].args.vars[elements[0]].getRowByIndex(int.parse(elements[1]));
-
-          //print(">" + row.toString() + "<");
-          data = data + row.toString();
-        }
-        break;
-
-        case "sheet.printCell": {
-          StringTools cursor = StringTools(cursordata.substring("sheet.printCell".length).trim());
-          cursor.deleteEdges();
-          cursor.data.trim();
-          cursor.data = cursor.data.replaceAll(' ', '');
-
-          List<String> elements = cursor.data.split(',');
-          String cell = pman.processes[_pid].args.vars[elements[0]].getCellByIndex(int.parse(elements[1]), int.parse(elements[2]));
-
-          //print(">" + cell + "<");
-          data = data + cell;
-        }
-        break;
-      }
-    } else {
       String variableType = variables.isVariableDeclaration(cursordata);
       if(variableType != "%NOTSUPPORTED%") {
         switch(variableType) {
@@ -444,7 +178,7 @@ class RestedScript {
           print("Error: Unknown command " + cursordata);
         }
       }
-    }
+
     return data;
   }
 
@@ -463,27 +197,35 @@ class RestedScript {
     return "";
   }
 
-  bool comment_on = false;
-
-  Future<String> processRSTags(String data, int _pid) async {
-    List<String> rs_blocks = [];
-    StringTools dparser = new StringTools(data);
-
+  // Parses the document for rs tags. Grabs whatever is between the tags, splits it by semicolon
+  // and sends the list to the doCommands function. The rs tags and its content are deleted and the
+  // result from doCommands are inserted in its place.
+  Future<String> processRSTags(int _pid, String _data) async {
+    debug(_pid, "doCommands()");
+    
+    StringTools cursor = new StringTools(_data);
     bool run = true;
 
-    // process <?rs ?> tags
     while (run) {
-      if (dparser.moveTo('<?rs')) {
-        dparser.deleteCharacters(4);
-        dparser.startSelection();
-        if (dparser.moveTo('?>')) {
-          dparser.deleteCharacters(2);
-          dparser.stopSelection();
-          rs_blocks.add(dparser.getSelection().trim());
-          dparser.position = dparser.start_selection;
-          dparser.deleteSelection();
-          String codeblocktag = "{%" + (rs_blocks.length - 1).toString() + "%}";
-          dparser.insertAtPosition(codeblocktag);
+
+      if (cursor.moveTo('<?rs')) {
+        cursor.deleteCharacters(4);
+        cursor.startSelection();
+        if (cursor.moveTo('?>')) {
+          cursor.deleteCharacters(2);
+          cursor.stopSelection();
+
+          String rsdata = cursor.getSelection().trim();
+          cursor.position = cursor.start_selection;
+          cursor.deleteSelection();
+
+          if (rsdata.contains(';')) {
+            List<String> command_list = rsdata.split(';');
+            String result = await doCommands(command_list, _pid);
+            cursor.insertAtPosition(result);
+          } else {
+            cursor.insertAtPosition("");
+          }
         } else {
           print("Missing closing bracket restedscript ?>");
         }
@@ -492,33 +234,206 @@ class RestedScript {
       }
     }
 
-    String document = dparser.data;
-
-    int i = 0;
-    for (String block in rs_blocks) {
-      if (block != null) {
-        if (block.contains(';')) {
-          List<String> command_list = block.split(';');
-          String result = await doCommands(command_list, _pid);
-          String codeblocktag = "{%" + i.toString() + "%}";
-          document = document.replaceAll(codeblocktag, result);
-        } else {  // Empty rs tags like such <?rs ?>
-          String codeblocktag = "{%" + i.toString() + "%}";
-          document = document.replaceAll(codeblocktag, "");
-        }
-      }
-      i++;
-    }
-
-    return document;
+    return cursor.data;
   }
 
-  Future<String> processLines(List<String> lines, int _pid) async {
-    debug(_pid, "processLines()");
-    String document = removeComments(_pid, lines);
-    document = await wrapDocument(_pid, document, root);
-    document = processForEach(document, _pid);
-    document = await processRSTags(document, _pid);
-    return document;
+  Future<String> doCommands(List<String> commands, int _pid) async {
+    debug(_pid, "doCommands()");
+    String data = "";
+
+    // remove null, whitespace and empty string elements from list
+    for(int i = 0; i < commands.length; i++) {
+      if(commands[i] == null) {
+        commands.removeAt(i);
+        i--;
+      } else {
+        commands[i] = commands[i].trim();
+
+        if(commands[i] == "") {
+          commands.removeAt(i);
+          i--;
+        }
+      }
+    }
+
+    /*
+        1: function()
+        2: variable.function()
+        3: name = function();
+        4: name = name;
+        5: var name = function();
+        6: var name = variable.function()
+        7: function() { }  <-- NOT YET SUPPORTED
+    */
+
+    for (String command in commands) {
+      StringTools cursor = new StringTools(command);
+
+      List<String> commandTarget = returnTarget(_pid, cursor.data);
+      //print(":: " + cursor.data);
+      //print(":: commandTarget = " + commandTarget.toString());
+
+      if(commandTarget[0] == "void") {
+        String function = functions.isSupportedFunction(cursor.data);
+        data = await doFunctions(function, cursor.data, _pid, data);
+      } else {
+        data = await doVariables("", cursor.data, _pid, data);        
+      }
+
+      //String function = functions.isSupportedFunction(cursor.data);
+      //data = await doFunctions(function, cursor.data, _pid, data);
+    }
+    return data;
+  }
+
+  List<String> returnTarget(int _pid, String _data) {
+    List<String> command = [];
+    /*
+      command[0]  void/create/update
+      command[1]  String/Int/Double/Bool/Sheet/List/Map
+      command[2]  name
+    */
+
+
+    StringTools cursor = new StringTools(_data);
+
+    bool run = true;
+    while(run) {
+      if(cursor.moveTo('"')) {
+        cursor.startSelection();
+        cursor.moveTo('"');
+        cursor.move();
+        cursor.stopSelection();
+        cursor.deleteSelection();
+        cursor.reset();
+      } else {
+        run = false;
+      }
+    }
+
+    // can be 3/4/5/6
+    if(cursor.data.contains('=')) {
+      String type = variables.isVariableDeclaration(cursor.data);
+
+      // can be 3/4
+      if(type == "%NOTSUPPORTED%") {
+        String name = cursor.data.split("=")[0].trim();
+        if(pman.processes[_pid].args.isVar(name)) {
+          command.add("update");
+          command.add(pman.processes[_pid].args.getType(name));
+          command.add(name);
+        } else {
+          print("Error: Unknown variable " + cursor.data);
+        }
+      } else {
+        cursor.reset();
+        cursor.deleteCharacters(type.length);
+        String name = cursor.data.split("=")[0].trim();
+        command.add("create");
+        command.add(type);
+        command.add(name);        
+      }
+    } else {
+      command.add("void");
+    }
+
+    return command;
+  }
+
+  List<String> commandList() {
+    List<String> commands = [];
+    
+    commands.addAll(functions.supportedFunctions);
+
+    return commands;
+  }
+
+  Future<String> doFunctions(String function, String cursordata, int _pid, data) async {
+    if (function != "%NOTSUPPORTED%") {
+      
+      StringTools cursor = StringTools(cursordata);
+      switch(function) {   
+
+        case "breakpoint": {
+          breakpoint(_pid);
+        }
+        break;
+
+        case "include": {
+          String filepath = cursor.getQuotedString();
+          String file = await functions.include(filepath, _pid);
+          if (file != "") {
+            String processed_file = await parse(file, _pid);
+            data = data + processed_file;
+          }
+        } 
+        break;
+
+        case "print": {
+          if(cursor.data.contains('"')) {
+            String string = cursor.getQuotedString();
+            data = data + functions.echo('"' + string + '"', _pid);
+          } else {
+            String variable = cursor.getFromTo("(", ")");
+            data = data + functions.echo(variable, _pid);
+          }
+        } 
+        break;
+
+        case "echo": { 
+          if(cursor.data.contains('"')) {
+            String string = cursor.getQuotedString();
+            data = data + functions.echo('"' + string + '"', _pid);
+          } else {
+            String variable = cursor.getFromTo("(", ")");
+            data = data + functions.echo(variable, _pid);
+          }
+        }
+        break;  
+
+        case "flag": {
+          String file = cursor.getQuotedString();
+          String flagsite = functions.flag(file, _pid);
+          if(flagsite != "unsupported") {
+            pman.processes[_pid].flag = flagsite;
+          }
+        } 
+        break;
+
+        case "download": {
+          String url = cursor.getQuotedString();
+          String file = await functions.download('"' + url + '"', _pid);
+          String processed_file = await parse("", _pid, externalfile: file);
+          data = data + processed_file;
+        } 
+        break;
+
+        case "debug": {
+          functions.debug(cursor.data, _pid);
+        } 
+        break;
+
+        case "sheet.addColumn": {
+          functions.sheet_addColumn(_pid, cursordata.substring("sheet.addColumn".length).trim());
+        }
+        break;
+
+        case "sheet.addRow": {
+          functions.sheet_addRow(_pid, cursordata.substring("sheet.addRow".length).trim());
+        }
+        break;
+
+        case "sheet.printRow": {
+          data = data + functions.sheet_printRow(_pid, cursordata.substring("sheet.printRow".length).trim());
+        }
+        break;
+
+        case "sheet.printCell": {
+          data = data + functions.sheet_printCell(_pid, cursordata.substring("sheet.printCell".length).trim());
+        }
+        break;
+      }
+    }
+    return data;
   }
 }
