@@ -75,15 +75,15 @@ class RestedScript {
   }
 
   Future<String> parse(String filepath, int _pid, {String? externalfile = null}) async {
-        debug(_pid, "parse()()");
+    debug(_pid, "parse()");
     if (filepath != "") {
       try {
         File data = new File(root + filepath);
         List<String> lines = data.readAsLinesSync(encoding: utf8);
         return (await processLines(lines, _pid));
-      } on FileSystemException {
-        print("Error reading " + root + filepath);
-        return ("");
+      } catch(e) {
+        print(e.toString());
+        return("");
       }
     } else if (externalfile != null) {
       LineSplitter ls = new LineSplitter();

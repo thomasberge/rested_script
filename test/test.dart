@@ -128,6 +128,8 @@ Future<bool> test_wrap_and_content() async {
   String result = await restedscript.createDocument("wrapping.html");
   if(result == "ABCDEFGHI") {
     bugs = false;
+  } else {
+    print(result);
   }
   return bugs;
 }
