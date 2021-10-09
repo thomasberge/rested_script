@@ -145,67 +145,25 @@ String flag(String argument, int _pid) {
 }
 
 Future<String> include(String argument, int _pid) async {
-  print("ARG=" + argument);
   StringTools cursor = StringTools(argument);
   if(argument.contains('%&')) {
     return pman.processes[_pid].getString(int.parse(cursor.getFromTo('%&', '&%')));
   } else {
     return pman.processes[_pid].args.get(argument);
   }
-/*
-  argument = argument.replaceAll('"', '');
-  List<String> split = argument.split('.');
-  if (split.length > 1) {
-    String filetype = argument.split('.')[argument.split('.').length-1];
-
-    if (filetype == 'html' || filetype == 'css' || filetype == 'txt') {
-      return (argument);
-    } else {
-      print("RestedScript: Unsupported include filetype for " +
-          argument.toString());
-      return "";
-    }
-  } else {
-    print("RestedScript: Attempted to include file with no filetype: " +
-        argument.toString());
-    return "";
-  }*/
 }
 
 String echo(String argument, int _pid) {
-  StringTools fparser = new StringTools(argument);
-  String output = "";
-  bool run = true;
-  while (run) {
-    if (fparser.data.substring(0,1) == '"') {
-      fparser.move();
-      fparser.startSelection();
-      if (fparser.moveTo('"')) {
-        fparser.stopSelection();
-        output = output + fparser.getSelection();
-        run = false;
-      } else {
-        print("Error: print missing quote(s) inside parentheses.\r\n print(" +
-            fparser.data +
-            ");");
-        run = false;
-      }
-    } else {
-      if(pman.processes[_pid].args.get(argument).toString() != "%KEYDOESNOTEXIST%") {
-        output = pman.processes[_pid].args.get(argument).toString();
-        run = false;
-      } else {
-        print("Error: print missing quote(s) inside parentheses.\r\n print(" +
-            fparser.data +
-            ");");
-        run = false;
-      }
-    }
+  StringTools cursor = StringTools(argument);
+  if(argument.contains('%&')) {
+    return pman.processes[_pid].getString(int.parse(cursor.getFromTo('%&', '&%')));
+  } else {
+    return pman.processes[_pid].args.get(argument);
   }
-  return (output);
 }
 
 void debug(String argument, int _pid) {
+  
   StringTools cursor = new StringTools(argument);
   cursor.data = cursor.data.substring("debug".length);
   cursor.deleteEdges();
