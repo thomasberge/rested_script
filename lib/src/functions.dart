@@ -129,7 +129,14 @@ String sheet_printCell(int _pid, String _data) {
 }
 
 Future<String> download(String argument, int _pid) async {
-  return(await io.downloadTextFile(argument));
+  StringTools cursor = StringTools(argument);
+  String path = "";
+  if(argument.contains('%&')) {
+    path = pman.processes[_pid].getString(int.parse(cursor.getFromTo('%&', '&%')));
+  } else {
+    path = pman.processes[_pid].args.get(argument);
+  }
+  return(await io.downloadTextFile(path));
 }
 
 String flag(String argument, int _pid) {
@@ -163,7 +170,13 @@ String echo(String argument, int _pid) {
 }
 
 void debug(String argument, int _pid) {
-  
+  StringTools cursor = StringTools(argument);
+  if(argument.contains('%&')) {
+    print("\u001b[31m" + pman.processes[_pid].getString(int.parse(cursor.getFromTo('%&', '&%'))) + "\u001b[0m");
+  } else {
+    print("\u001b[31m" + pman.processes[_pid].args.get(argument) + "\u001b[0m");
+  }
+  /*  
   StringTools cursor = new StringTools(argument);
   cursor.data = cursor.data.substring("debug".length);
   cursor.deleteEdges();
@@ -173,7 +186,7 @@ void debug(String argument, int _pid) {
   } else {
     String output = pman.processes[_pid].args.get(cursor.data).toString();
     print("\u001b[31m" + output + "\u001b[0m");
-  }
+  }*/
 }
 
 void variable(String argument, int _pid) {

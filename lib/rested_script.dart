@@ -386,8 +386,7 @@ class RestedScript {
         break;
 
         case "download": {
-          String url = cursor.getQuotedString();
-          String file = await functions.download('"' + url + '"', _pid);
+          String file = await functions.download(cursor.data, _pid);
           String processed_file = await parse("", _pid, externalfile: file);
           data = data + processed_file;
         } 
