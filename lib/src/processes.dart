@@ -28,8 +28,18 @@ class Process {
     bool debugEnabled = false;
     Arguments args = Arguments();
     DateTime createdAt = DateTime.now();
+    List<String> strings = [];
 
     Process(this.args) {
         createdAt = DateTime.now();
+    }
+
+    int setString(String string){
+        strings.add(string);
+        return strings.length - 1;
+    }
+
+    String getString(int index){
+        return strings[index];
     }
 }

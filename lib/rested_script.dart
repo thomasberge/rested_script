@@ -182,27 +182,11 @@ class RestedScript {
     return data;
   }
 
-  /// RestedScript function: include
-  ///
-  /// Example:
-  /// include("scripts.html");
-
-  String f_set(String scriptargument, int _pid) {
-    debug(_pid, "f_set()");
-    StringTools argparser = new StringTools(scriptargument);
-    argparser.moveTo(',');
-    String key = argparser.getAllBeforePosition();
-    String value = argparser.getAllAfterPosition();
-    pman.processes[_pid].args.setmap[key] = value;
-    return "";
-  }
-
   // Parses the document for rs tags. Grabs whatever is between the tags, splits it by semicolon
   // and sends the list to the doCommands function. The rs tags and its content are deleted and the
   // result from doCommands are inserted in its place.
   Future<String> processRSTags(int _pid, String _data) async {
     debug(_pid, "doCommands()");
-    
     StringTools cursor = new StringTools(_data);
     bool run = true;
 
@@ -267,6 +251,8 @@ class RestedScript {
     */
 
     for (String command in commands) {
+      command = newCommand(_pid, command);
+
       StringTools cursor = new StringTools(command);
 
       List<String> commandTarget = returnTarget(_pid, cursor.data);
@@ -435,5 +421,25 @@ class RestedScript {
       }
     }
     return data;
+  }
+
+  String offloadStrings(_pid, _data) {
+    StringTools cursor = StringTools(_data);
+    while(cursor.data.contains('"')) {
+      cursor.selectFromTo('"', '"', includeArguments: true);
+      //cursor.deleteEdges();
+      String value = cursor.getSelection();
+      cursor.replaceSelection("%&" + pman.processes[_pid].setString(value).toString() + "&%");
+      cursor.reset();
+      print("VALUE=" + value);
+      print("DATA=" + cursor.data);
+    }
+    return _data;
+  }  
+
+  String newCommand(int _pid, String _command) {
+    //print("COMMAND=" + _command);
+    _command = offloadStrings(_pid, _command);
+    return _command;
   }
 }
