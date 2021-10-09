@@ -40,6 +40,6 @@ class Process {
     }
 
     String getString(int index){
-        return strings[index];
+        return strings[index].substring(1, strings[index].length - 1);
     }
 }

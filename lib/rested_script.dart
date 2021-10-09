@@ -346,8 +346,7 @@ class RestedScript {
         break;
 
         case "include": {
-          String filepath = cursor.getQuotedString();
-          String file = await functions.include(filepath, _pid);
+          String file = await functions.include(cursor.data, _pid);
           if (file != "") {
             String processed_file = await parse(file, _pid);
             data = data + processed_file;
@@ -431,10 +430,8 @@ class RestedScript {
       String value = cursor.getSelection();
       cursor.replaceSelection("%&" + pman.processes[_pid].setString(value).toString() + "&%");
       cursor.reset();
-      print("VALUE=" + value);
-      print("DATA=" + cursor.data);
     }
-    return _data;
+    return cursor.data;
   }  
 
   String newCommand(int _pid, String _command) {

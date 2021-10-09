@@ -145,6 +145,14 @@ String flag(String argument, int _pid) {
 }
 
 Future<String> include(String argument, int _pid) async {
+  print("ARG=" + argument);
+  StringTools cursor = StringTools(argument);
+  if(argument.contains('%&')) {
+    return pman.processes[_pid].getString(int.parse(cursor.getFromTo('%&', '&%')));
+  } else {
+    return pman.processes[_pid].args.get(argument);
+  }
+/*
   argument = argument.replaceAll('"', '');
   List<String> split = argument.split('.');
   if (split.length > 1) {
@@ -161,7 +169,7 @@ Future<String> include(String argument, int _pid) async {
     print("RestedScript: Attempted to include file with no filetype: " +
         argument.toString());
     return "";
-  }
+  }*/
 }
 
 String echo(String argument, int _pid) {
