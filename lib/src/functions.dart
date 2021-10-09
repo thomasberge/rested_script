@@ -128,47 +128,6 @@ String sheet_printCell(int _pid, String _data) {
   return cell;
 }
 
-Future<String> download(String argument, int _pid) async {
-  StringTools cursor = StringTools(argument);
-  String path = "";
-  if(argument.contains('%&')) {
-    path = pman.processes[_pid].getString(int.parse(cursor.getFromTo('%&', '&%')));
-  } else {
-    path = pman.processes[_pid].args.get(argument);
-  }
-  return(await io.downloadTextFile(path));
-}
-
-String flag(String argument, int _pid) {
-  argument = argument.replaceAll('"', '');
-  String filetype = argument.split('.')[1];
-
-  if (filetype == 'html') {
-    return argument;
-  } else {
-    print("Error: Unsupported flag filetype for " + argument);
-    return "unsupported";
-  }
-}
-
-Future<String> include(String argument, int _pid) async {
-  StringTools cursor = StringTools(argument);
-  if(argument.contains('%&')) {
-    return pman.processes[_pid].getString(int.parse(cursor.getFromTo('%&', '&%')));
-  } else {
-    return pman.processes[_pid].args.get(argument);
-  }
-}
-
-String echo(String argument, int _pid) {
-  StringTools cursor = StringTools(argument);
-  if(argument.contains('%&')) {
-    return pman.processes[_pid].getString(int.parse(cursor.getFromTo('%&', '&%')));
-  } else {
-    return pman.processes[_pid].args.get(argument);
-  }
-}
-
 void debug(String argument, int _pid) {
   StringTools cursor = StringTools(argument);
   if(argument.contains('%&')) {
@@ -176,17 +135,6 @@ void debug(String argument, int _pid) {
   } else {
     print("\u001b[31m" + pman.processes[_pid].args.get(argument) + "\u001b[0m");
   }
-  /*  
-  StringTools cursor = new StringTools(argument);
-  cursor.data = cursor.data.substring("debug".length);
-  cursor.deleteEdges();
-  if(cursor.edgesIs('"')) {
-    String output = cursor.getQuotedString();
-    print("\u001b[31m" + output + "\u001b[0m");
-  } else {
-    String output = pman.processes[_pid].args.get(cursor.data).toString();
-    print("\u001b[31m" + output + "\u001b[0m");
-  }*/
 }
 
 void variable(String argument, int _pid) {
@@ -200,4 +148,13 @@ String map(String argument, int _pid) {
 
 void rsbreakpoint(int _pid) {
   breakpoint(_pid);
+}
+
+String getString(int _pid, String _argument) {
+  StringTools cursor = StringTools(_argument);
+  if(_argument.contains('%&')) {
+    return pman.processes[_pid].getString(int.parse(cursor.getFromTo('%&', '&%')));
+  } else {
+    return pman.processes[_pid].args.get(_argument);
+  }
 }

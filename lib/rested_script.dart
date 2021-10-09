@@ -346,54 +346,37 @@ class RestedScript {
         break;
 
         case "include": {
-          String file = await functions.include(cursor.data, _pid);
-          if (file != "") {
-            String processed_file = await parse(file, _pid);
-            data = data + processed_file;
-          }
+          String file = functions.getString(_pid, cursor.data);
+          String processed_file = await parse(file, _pid);
+          data = data + processed_file;
         } 
         break;
 
         case "print": {
-          if(cursor.data.contains('"')) {
-            String string = cursor.getQuotedString();
-            data = data + functions.echo('"' + string + '"', _pid);
-          } else {
-            String variable = cursor.getFromTo("(", ")");
-            data = data + functions.echo(variable, _pid);
-          }
+          data = functions.getString(_pid, cursor.getFromTo("(", ")"));
         } 
         break;
 
-        case "echo": { 
-          if(cursor.data.contains('"')) {
-            String string = cursor.getQuotedString();
-            data = data + functions.echo('"' + string + '"', _pid);
-          } else {
-            String variable = cursor.getFromTo("(", ")");
-            data = data + functions.echo(variable, _pid);
-          }
+        case "echo": {
+          data = functions.getString(_pid, cursor.getFromTo("(", ")"));
         }
         break;  
 
         case "flag": {
-          String file = cursor.getQuotedString();
-          String flagsite = functions.flag(file, _pid);
-          if(flagsite != "unsupported") {
-            pman.processes[_pid].flag = flagsite;
-          }
+          pman.processes[_pid].flag = functions.getString(_pid, cursor.data);
         } 
         break;
 
         case "download": {
-          String file = await functions.download(cursor.data, _pid);
+          String file = await io.downloadTextFile(functions.getString(_pid, cursor.data));
           String processed_file = await parse("", _pid, externalfile: file);
           data = data + processed_file;
         } 
         break;
 
         case "debug": {
-          functions.debug(cursor.data, _pid);
+          print("\u001b[31m" + functions.getString(_pid, cursor.data) + "\u001b[0m");
+          //functions.debug(cursor.data, _pid);
         } 
         break;
 
