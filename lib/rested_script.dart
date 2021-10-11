@@ -252,12 +252,8 @@ class RestedScript {
 
     for (String command in commands) {
       command = newCommand(_pid, command);
-
       StringTools cursor = new StringTools(command);
-
       List<String> commandTarget = returnTarget(_pid, cursor.data);
-      //print(":: " + cursor.data);
-      //print(":: commandTarget = " + commandTarget.toString());
 
       if(commandTarget[0] == "void") {
         String function = functions.isSupportedFunction(cursor.data);
@@ -265,9 +261,6 @@ class RestedScript {
       } else {
         data = await doVariables("", cursor.data, _pid, data);        
       }
-
-      //String function = functions.isSupportedFunction(cursor.data);
-      //data = await doFunctions(function, cursor.data, _pid, data);
     }
     return data;
   }
@@ -376,7 +369,6 @@ class RestedScript {
 
         case "debug": {
           print("\u001b[31m" + functions.getString(_pid, cursor.data) + "\u001b[0m");
-          //functions.debug(cursor.data, _pid);
         } 
         break;
 
@@ -406,7 +398,7 @@ class RestedScript {
 
   String offloadStrings(_pid, _data) {
     StringTools cursor = StringTools(_data);
-    while(cursor.data.contains('"')) {
+    while(cursor.count('"') > 1) {
       cursor.selectFromTo('"', '"', includeArguments: true);
       //cursor.deleteEdges();
       String value = cursor.getSelection();

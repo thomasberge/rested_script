@@ -3,6 +3,7 @@ import 'debug.dart';
 import 'processes.dart';
 import 'io.dart' as io;
 import 'arguments.dart';
+import 'functions.dart' as functions;
 
 List<String> supportedFunctions = ["include", "print", "echo", "flag", "debug", "download", "breakpoint", 
 "sheet.addColumn", "sheet.addRow", "sheet.printRow", "sheet.printCell"];
@@ -50,19 +51,8 @@ void sheet_addRow(int _pid, String _data) {
   
   if(pman.processes[_pid].args.isVar(key)) {
     while(run) {
-      if(cursor.moveTo('"')) {
-        cursor.startSelection();
-        cursor.moveToNext('"');
-        cursor.move();
-        cursor.stopSelection();
-        cursor.deleteEdgesOfSelection();
-        String value = cursor.getSelection();
-        cursor.deleteSelection();
-        cursor.reset();
-        if(value == ""){
-          value = "%NULL%";
-        }
-        rowItems.add(value);
+      if(cursor.data.contains('%&') && cursor.data.contains('&%')) {
+        rowItems.add(functions.getString(_pid, cursor.deleteFromTo('%&', '&%', includeArguments: true)));
       } else {
         run = false;
       }
@@ -70,14 +60,11 @@ void sheet_addRow(int _pid, String _data) {
   
     if(pman.processes[_pid].args.vars[key].headers.length == rowItems.length) {
       pman.processes[_pid].args.vars[key].addRow(rowItems);
-      //print(pman.processes[_pid].args.vars[key].sheet.toString());
     } else {
       breakpoint(_pid);
       print("Error: Tried to insert " + rowItems.length.toString() + " items into a " + 
       pman.processes[_pid].args.vars[key].headers.length.toString() + "-column Sheet.");
     }
-    
-    //print(rowItems.toString());
   } else {
     print("Error: Unknown variable " + key);
   }  
@@ -128,19 +115,6 @@ String sheet_printCell(int _pid, String _data) {
   return cell;
 }
 
-void debug(String argument, int _pid) {
-  StringTools cursor = StringTools(argument);
-  if(argument.contains('%&')) {
-    print("\u001b[31m" + pman.processes[_pid].getString(int.parse(cursor.getFromTo('%&', '&%'))) + "\u001b[0m");
-  } else {
-    print("\u001b[31m" + pman.processes[_pid].args.get(argument) + "\u001b[0m");
-  }
-}
-
-void variable(String argument, int _pid) {
-  print("var argument=" + argument);
-}
-
 String map(String argument, int _pid) {
   print("map function called");
   return "";
@@ -153,8 +127,8 @@ void rsbreakpoint(int _pid) {
 String getString(int _pid, String _argument) {
   StringTools cursor = StringTools(_argument);
   if(_argument.contains('%&')) {
-    return pman.processes[_pid].getString(int.parse(cursor.getFromTo('%&', '&%')));
+    return pman.processes[_pid].getString(int.parse(cursor.deleteFromTo('%&', '&%')));
   } else {
-    return pman.processes[_pid].args.get(_argument);
+    return pman.processes[_pid].args.get(_argument).toString();
   }
 }

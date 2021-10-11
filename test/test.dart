@@ -84,6 +84,8 @@ Future<bool> test_download() async {
   String result = await restedscript.createDocument("downloadfile.txt");
   if(result == "1234567890") {
     bugs = false;
+  } else {
+    print('expected "1234567890", got "' + result + '"');
   }
   return bugs;
 }

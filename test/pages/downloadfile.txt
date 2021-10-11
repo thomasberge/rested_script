@@ -1,1 +1,3 @@
-123<?rs download("https://raw.githubusercontent.com/thomasberge/rested_script/dev/test/pages/include.html"); ?>7890
+123<?rs   
+// whaaa "
+    download("https://raw.githubusercontent.com/thomasberge/rested_script/dev/test/pages/include.html");    // < + "" ?>7890

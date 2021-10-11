@@ -5,47 +5,56 @@ String removeComments(int _pid, List<String> lines) {
     debug(_pid, "removeComments()");
     List<String> document = [];
     bool rs = false;
+    List<String> stopAt = ['<?rs', '"', '//', '?>'];
 
     int i = 0;
 
+    // iterates over lines one by one. If rs tag is encountered the rs flag is turned on/off.
+    // when on, it looks for quotes and comments. If unescaped quotes are encountered the inString
+    // is turned on/off respectively. If off and comments // are encuntered then it will select the
+    // rest of the script until either endofline or endofscript ?>. The selected string will be deleted.
     for (var line in lines) {
+      bool inString = false;
+      bool commentOn = false;
       i++;
 
-      // Lines with both <?rs and ?> does currently not support comments
+      StringTools cursor = StringTools(line);
 
-      if(rs = false) {
-        if(line.contains("<?rs")) {
+      String element = cursor.moveToListElement(stopAt);
+      while(element != "") {
+        if(element == '<?rs') {
           rs = true;
-          StringTools cursor = StringTools(line);
-          cursor.moveTo("<?rs");
-          if(cursor.moveTo('//')) {
-            cursor.startSelection();
-            cursor.moveToEnd();
+        } else if(element == '?>') {
+          if(commentOn) {
             cursor.stopSelection();
             cursor.deleteSelection();
-            line = cursor.data;
+            commentOn = false;
           }
-        }
-      } else {
-        if(line.contains("?>")){
           rs = false;
-        } else {
-          StringTools cursor = StringTools(line);
-          if(cursor.moveTo('//')) {
-            cursor.startSelection();
-            cursor.moveToEnd();
+        } else if(element == '"' && rs) {
+          if(cursor.getBeforePosition != r'\') {
+            inString = !inString;
+          }
+        } else if(element == '//' && rs && inString == false) {
+          cursor.startSelection();
+          commentOn = true;
+        }
+        cursor.move();
+        element = cursor.moveToListElement(stopAt);
+        
+        if(element == "") {
+          if(commentOn) {
             cursor.stopSelection();
             cursor.deleteSelection();
-            line = cursor.data;
-          }          
+          }
         }
       }
 
       if (i < lines.length) {
-        document.add(line + "\n");
+        document.add(cursor.data + "\n");
       } else {
-        document.add(line);
-      }
+        document.add(cursor.data);
+      }      
     }
 
     return document.join();

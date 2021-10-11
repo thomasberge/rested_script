@@ -1,7 +1,7 @@
 import 'processes.dart';
 import 'package:string_tools/string_tools.dart';
 import 'sheets.dart';
-
+import 'functions.dart' as functions;
 List<String> supportedVariableTypes = ["Map", "String", "Int", "List", "Bool", "Double", "Sheet"];
 List<String> supportedSheetColumnTypes = ["String"];
 
@@ -416,9 +416,15 @@ void initString(int _pid, String data) {
   if(cursor.moveTo('=')) {
     String key = cursor.getAllBeforePosition().trim();
     if(keyFormat.hasMatch(key)) {
-      String value = cursor.getAllAfterPosition().trim();
+      String value = cursor.getAllAfterPosition().trim().replaceAll(' ', '');
+
+      List<String> elems = value.split('+');
+
+      for(int i = 0; i < elems.length; i++) {
+        elems[i] = functions.getString(_pid, elems[i]);
+      }
+      value = elems.join();
       
-      value = combineToOneString(_pid, value);
       pman.processes[_pid].args.setString(key, value);      
     } else {
       print("Error: Invalid variable name in " + key + "\r\nPlease only use a-z, A-Z, 0-9, underscore or dash.");
@@ -432,6 +438,7 @@ String combineToOneString(int _pid, String _data) {
     RegExp exp2 = new RegExp(r"^[a-z0-9_]*$", caseSensitive: false);
     RegExp exp3 = new RegExp(r"^[ +]");
 
+    //print("combinedata=" + _data);
     List<String> elements = _data.split('+');
     for(int i = 0; i < elements.length; i++) {
       StringTools cursor = StringTools(elements[i].trim());
@@ -503,40 +510,21 @@ void initSheet(int _pid, String _data) {
         String columnType = cursor.getSelection().trim();
 
         if(isSupportedSheetColumnType(columnType)) {
-          cursor.moveTo('"');
-          cursor.stopSelection();
-          cursor.deleteSelection();
-          cursor.reset();
-          cursor.startSelection();
-
-          if(cursor.moveToNext('"')) {
-            cursor.move();
-            cursor.stopSelection();
-            cursor.deleteEdgesOfSelection();
-            String columnName = cursor.getSelection();
-            //print("columnName=" + columnName);
-            cursor.deleteSelection();
+          cursor.selectFromTo('%&', '&%');
+          String value = pman.processes[_pid].getString(int.parse(cursor.getSelection()));
+          sheet.addColumn(columnType, value);
+          if(cursor.moveTo(',')) {
+            cursor.data = cursor.getAllAfterPosition();
             cursor.reset();
-            sheet.addColumn(columnType, columnName);
-
-            if(cursor.moveTo(',')) {
-              cursor.data = cursor.getAllAfterPosition();
-              cursor.reset();
-            }
-          } else {
-            print("Error: Sheet column name missing enclosing quotes. " + cursor.data);
           }
         } else {
           print("Error: Unsupported column type " + columnType);
           run = false;
         }
       } else {
-        //print("Exiting");
-        //print("Sheet data: " + cursor.data);
         run = false;
       }
     }
     pman.processes[_pid].args.setSheet(key, sheet);
-    //pman.processes[_pid].args.debug();
   }
 }
