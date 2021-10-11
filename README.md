@@ -24,7 +24,7 @@ String index_page = await rscript.createDocument("index.html");
 I will be disregarded <?rs 
     // I am only a comment and will also be disregarded.
     print("I will be processed!");
-?> so will I.
+?> but not I since I am outside of tags.
 ```
 
 ##### Instantiate variables
@@ -37,6 +37,23 @@ I will be disregarded <?rs
     Bool theTruth = false;
     List someList = [myString, myWholeNumber, myNumberWithDecimals, theTruth];
     Map mapToNowhere = { "key1": "value", "key2": { "key3": 3, "key4": false }}
+?>
+```
+
+##### The new Sheet variable/class type - still WIP
+Currently only supports a handfull of features and only String type.
+
+```
+<?rs 
+    Sheet names = [];
+    sheet.addColumn(names, String: "Firstname");
+    sheet.addColumn(names, String: "Lastname");
+    sheet.addRow(names, "Tom", "Bola");
+    sheet.printRow(apis, 0);    // "Tom Bola"
+
+    Sheet someSheet = [String: "column1", String: "column2"];
+    sheet.addRow(someSheet, "value1", "value2");
+    sheet.printCell(apis, 0, 0);    // "value2"
 ?>
 ```
 
@@ -96,22 +113,6 @@ Prints the message to console.
 
 ```
 debug("This part of your document is currently being processed.");
-```
-
-#### download(string url);
-Downloads and includes the text in the URL. If the file contains RestedScript it will be processed just like a standard include() function.
-
-```
-download("https://raw.githubusercontent.com/thomasberge/rested_script/dev/test/pages/include.html");
-```
-
-#### print(string text); / echo(string text);
-The passed string argument to print() will be written in the document. Also supports echo() for the exact same result. If the passed value is not in quotes then it is assumed to be a variable. If the variable is not a string then it will be 
-
-```
-print("This line will be written in the document.");
-print(myVariable);
-echo("This line will also be written in the document.");
 ```
 
 #### flag(string filename);
