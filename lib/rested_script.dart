@@ -18,6 +18,8 @@ import 'src/processes.dart';
 import 'src/debug.dart';
 import 'src/templating.dart';
 import 'src/comments.dart';
+import 'src/sheets.dart';
+export 'src/sheets.dart';
 
 /*
   createDocument()

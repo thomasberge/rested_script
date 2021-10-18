@@ -3,6 +3,7 @@ import 'debug.dart';
 import 'dart:io';
 import 'dart:async';
 import 'processes.dart';
+import 'sheets.dart';
 
 Future<String> wrapDocument(int _pid, String data, String root) async {
     debug(_pid, "wrapDocument()");
@@ -68,9 +69,26 @@ Future<String> wrapDocument(int _pid, String data, String root) async {
           dparser.position = dparser.start_selection;
           dparser.deleteSelection();
 
+          var thelist;
+          bool fullsheet = false;
 
-          //List<dynamic> thelist = args.get(listname);
-          var thelist = pman.processes[_pid].args.get(listname);
+          if(listname.contains('.')) {
+            String sheetname = listname.split('.')[0];
+            String columnname = listname.split('.')[1];
+            print("Sheet=" + sheetname);
+            print("Column=" + columnname);
+
+            if(columnname == '*') {
+              fullsheet = true;
+            } else {
+              Sheet sheet = pman.processes[_pid].args.get(sheetname);
+              thelist = sheet.getColumnByName(columnname);
+            }
+          } else {
+            thelist = pman.processes[_pid].args.get(listname);  
+          }
+          
+          if(fullsheet == false) {
             int i = 0;
             while (i < thelist.length) {
               String newblock =
@@ -78,7 +96,11 @@ Future<String> wrapDocument(int _pid, String data, String root) async {
               dparser.insertAtPosition(newblock);
               dparser.move(characters: newblock.length);
               i++;
-            }            
+            }
+          } else {
+
+          }
+
         } else {
           print('Missing closing {{endforeach}}');
         }

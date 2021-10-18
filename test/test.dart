@@ -211,8 +211,21 @@ Future<bool> test_comments() async {
 
 Future<bool> test_sheet() async {
   bool bugs = true;
+
+  Arguments args = new Arguments();
+
+  Sheet sheet = Sheet();
+  sheet.addColumn("String", "Movies");
+  sheet.addRow(["The Abyss"]);
+  sheet.addRow(["Knives Out"]);
+  sheet.addRow(["The Final Girls"]);
+  sheet.addRow(["Titanic"]);
+
+  args.setSheet("collection", sheet);
+
   RestedScript restedscript = RestedScript(root: "/app/bin/pages/");
-  String result = await restedscript.createDocument("sheet.html");
+  String result = await restedscript.createDocument("foreachsheet.html", args: args);
+
   if(result == "?") {
     bugs = false;
   }

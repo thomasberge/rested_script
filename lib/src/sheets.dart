@@ -71,6 +71,12 @@ class Sheet {
         return sheet[_column];
     }
 
+    List<String> getColumnByName(String _name) {
+        print("COLUMNS:" + headers.toString());
+        print("index of " + _name + ": " + headers.indexOf(_name).toString());
+        return sheet[headers.indexOf(_name)];
+    }
+
     List<String> getRowByIndex(int _row) {
         List<String> row = [];
         for(int i = 0; i < sheet.length; i++) {
