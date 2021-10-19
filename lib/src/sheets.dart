@@ -97,9 +97,9 @@ class Sheet {
         return headers.indexOf(_column);
     }
 
-    int getFirstRowIndex()
+    //int getFirstRowIndex()
 
-    String toString(){
+    String toString() {
         return sheet.toString();
     }
 }
