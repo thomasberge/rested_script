@@ -1,4 +1,5 @@
 <?rs
+    // FAR FROM FEATURE-COMPLETE!!
     Sheet empty = [];
     sheet.addColumn(empty, String: "active");
     sheet.addColumn(empty, String: "name");
@@ -7,7 +8,7 @@
     Sheet apis = [String: "active", String: "name"];
     sheet.addRow(apis, "nope", "My Test API");
 
-    sheet.printRow(apis, 0);
+    //sheet.printRow(apis, 0);
     sheet.printCell(apis, 0, 0);
     //print("Active=" + apis["active"][0]);
     //print("Name=" + apis[0][1]);

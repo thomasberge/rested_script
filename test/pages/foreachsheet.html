@@ -1,5 +1,1 @@
-Movielist:
-{{foreach("collection.Movies")}}
-    {{element("collection.Movies")}}
-{{endforeach("collection.Movies")}}
------
+{{foreach(collection.*)}}{{collection.Letters}}{{collection.Numbers}}{{endforeach(collection.*)}}

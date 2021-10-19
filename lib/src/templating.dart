@@ -52,31 +52,32 @@ Future<String> wrapDocument(int _pid, String data, String root) async {
       // start marking the block.
       if (dparser.moveTo('{{foreach')) {
         int prevPos = dparser.position;
-        dparser.startSelection();
-        dparser.moveTo('}}');
-        dparser.move(characters: 2);
-        dparser.stopSelection();
-        StringTools forEachParser = StringTools(dparser.getSelection());
-        String listname = forEachParser.getQuotedString();
-        dparser.deleteSelection();
+        String listname = dparser.getFromTo('(', ')');
+        dparser.position = prevPos;
+        dparser.deleteFromTo('{{', '}}', includeArguments: true);
         dparser.position = prevPos;
         dparser.startSelection();
 
-        if (dparser.moveTo('{{endforeach("' + listname + '")}}')) {
-          dparser.deleteCharacters(('{{endforeach("' + listname + '")}}').length);
+        if (dparser.moveTo('{{endforeach(' + listname + ')}}')) {
+          dparser.deleteCharacters(('{{endforeach(' + listname + ')}}').length);
           dparser.stopSelection();
           block = dparser.getSelection();
           dparser.position = dparser.start_selection;
           dparser.deleteSelection();
 
           var thelist;
+          String sheetname = "";
+
           bool fullsheet = false;
 
+          // PICK A LIST
+          // If the listname contains a . then it is a sheet. A sheet is basically a collection of lists. If the column name
+          // (list name) is specified after the . then that column list is used in the forEach. If an * is used however then
+          // the fullsheet variable is set to true and no list is specified. Instead, each list in the sheet is parsed over
+          // in the PARSE THE LIST part.
           if(listname.contains('.')) {
-            String sheetname = listname.split('.')[0];
+            sheetname = listname.split('.')[0];
             String columnname = listname.split('.')[1];
-            print("Sheet=" + sheetname);
-            print("Column=" + columnname);
 
             if(columnname == '*') {
               fullsheet = true;
@@ -88,17 +89,31 @@ Future<String> wrapDocument(int _pid, String data, String root) async {
             thelist = pman.processes[_pid].args.get(listname);  
           }
           
-          if(fullsheet == false) {
+          // PARSE THE LIST
+          if(fullsheet == false) {  // if singular list
             int i = 0;
             while (i < thelist.length) {
-              String newblock =
-                  block.replaceAll('{{element("' + listname + '")}}', thelist[i].toString());
+              String newblock = block.replaceAll('{{' + listname + '}}', thelist[i].toString());
               dparser.insertAtPosition(newblock);
               dparser.move(characters: newblock.length);
               i++;
             }
-          } else {
-
+          } else {    // if full-blown sheet zomg
+            Sheet sheet = pman.processes[_pid].args.get(sheetname);
+            
+            int i = 0;
+            while (i < sheet.lines) {
+              String newblock = block;
+              for(String header in sheet.headers) {
+                if(newblock.contains(sheetname + "." + header)) {
+                  String cell = sheet.getCellByColumnName(header, i);
+                  newblock = newblock.replaceAll('{{' + sheetname + '.' + header + '}}', cell);
+                }
+              }
+              dparser.insertAtPosition(newblock);
+              dparser.move(characters: newblock.length);
+              i++;
+            }
           }
 
         } else {

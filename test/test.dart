@@ -66,6 +66,12 @@ main() async {
   } else {
     print("sheet\t\t\t\t\t[\u001b[32mOK\u001b[0m]");  
   }
+
+  if(await test_sheetForEach()) {
+    print("sheet foreach\t\t\t\t[\u001b[31mFailed\u001b[0m]");
+  } else {
+    print("sheet foreach\t\t\t\t[\u001b[32mOK\u001b[0m]");  
+  }
 }
 
 Future<bool> test_include() async {
@@ -211,24 +217,42 @@ Future<bool> test_comments() async {
 
 Future<bool> test_sheet() async {
   bool bugs = true;
+  RestedScript restedscript = RestedScript(root: "/app/bin/pages/");
+  String result = await restedscript.createDocument("sheet.html");
+  if(result == "nope") {
+    bugs = false;
+  } else {
+    print(result);
+  }
+  return bugs;
+}
+
+Future<bool> test_sheetForEach() async {
+  bool bugs = true;
 
   Arguments args = new Arguments();
 
   Sheet sheet = Sheet();
-  sheet.addColumn("String", "Movies");
-  sheet.addRow(["The Abyss"]);
-  sheet.addRow(["Knives Out"]);
-  sheet.addRow(["The Final Girls"]);
-  sheet.addRow(["Titanic"]);
+  sheet.addColumn("String", "Letters");
+  sheet.addRow(["A"]);
+  sheet.addRow(["B"]);
+  sheet.addRow(["C"]);
+  sheet.addRow(["D"]);
+
+  sheet.addColumn("String", "Numbers");
+  sheet.addRow(["E", "1"]);
+  sheet.addRow(["F", "2", "overflow deløx"]);
 
   args.setSheet("collection", sheet);
 
   RestedScript restedscript = RestedScript(root: "/app/bin/pages/");
   String result = await restedscript.createDocument("foreachsheet.html", args: args);
 
-  if(result == "?") {
+  if(result == "ABCDE1F2") {
     bugs = false;
+  } else {
+    print(result);
   }
-  print(result);
+  
   return bugs;
 }

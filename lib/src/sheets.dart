@@ -54,12 +54,14 @@ class Sheet {
 
     int addRow(List<String> _row){
         for(int i = 0; i<_row.length; i++) {
-            if(_row[i] == "%NULL%") {
-                sheet[i].add("");
-                nullmap[i].add(false);
-            } else {
-                sheet[i].add(_row[i]);
-                nullmap[i].add(true);
+            if(i < headers.length) {
+                if(_row[i] == "%NULL%") {
+                    sheet[i].add("");
+                    nullmap[i].add(false);
+                } else {
+                    sheet[i].add(_row[i]);
+                    nullmap[i].add(true);
+                }
             }
         }
 
@@ -72,8 +74,6 @@ class Sheet {
     }
 
     List<String> getColumnByName(String _name) {
-        print("COLUMNS:" + headers.toString());
-        print("index of " + _name + ": " + headers.indexOf(_name).toString());
         return sheet[headers.indexOf(_name)];
     }
 
@@ -86,10 +86,18 @@ class Sheet {
     }
 
     String getCellByIndex(int _column, int _row) {
-        //print(sheet.toString());
-        //print("getCellByIndex(" + _column.toString() + ", " + _row.toString() + ");");
         return sheet[_column][_row];
     }
+
+    String getCellByColumnName(String _column, int _row) {
+        return sheet[headers.indexOf(_column)][_row];
+    }
+
+    int getColumnIndex(String _column){
+        return headers.indexOf(_column);
+    }
+
+    int getFirstRowIndex()
 
     String toString(){
         return sheet.toString();
