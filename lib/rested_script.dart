@@ -55,7 +55,9 @@ class RestedScript {
 
   String root;
 
-  Future<String> createDocument(String filepath, {Arguments? args = null, bool debug = false}) async {
+  Future<String> createDocument(String filepath, {Arguments? args = null, bool debug = false, String data = ""}) async {
+    List<String> lines;
+
     if(args == null) {
       args = Arguments();
     }
@@ -68,7 +70,14 @@ class RestedScript {
       pman.processes[_pid].debugEnabled = true;
     }
 
-    String doc = await parse(filepath, _pid);
+    if(data != "") {
+      LineSplitter ls = new LineSplitter();
+      lines = ls.convert(data);
+    } else {
+      File data = new File(root + filepath);
+      lines = data.readAsLinesSync(encoding: utf8);      
+    }
+    String doc = await processLines(lines, _pid);
 
     if (pman.processes[_pid].flag != "") {
       doc = await parse("flagsites/" + pman.processes[_pid].flag, _pid);
