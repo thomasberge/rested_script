@@ -55,6 +55,32 @@ class RestedScript {
 
   String root;
 
+  // Temp duplicate of createDocument but with no file reading capabilities.
+  Future<String> stringToDoc(String data, {Arguments? args = null, bool debug = false}) async {
+    List<String> lines;
+
+    if(args == null) {
+      args = Arguments();
+    }
+
+    int _pid = pman.createProcess(args);
+
+    if(debugEnabled) {
+      pman.processes[_pid].debugEnabled = true;
+    } else if(debug == true) {
+      pman.processes[_pid].debugEnabled = true;
+    }
+
+    LineSplitter ls = new LineSplitter();
+    lines = ls.convert(data);
+    String doc = await processLines(lines, _pid);
+
+    if (pman.processes[_pid].flag != "") {
+      doc = await parse("flagsites/" + pman.processes[_pid].flag, _pid);
+    }
+    return doc;
+  }  
+
   Future<String> createDocument(String filepath, {Arguments? args = null, bool debug = false, String data = ""}) async {
     List<String> lines;
 
