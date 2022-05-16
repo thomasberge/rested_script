@@ -16,6 +16,12 @@ You can then - relative to its root directory, pass it file paths to text files 
 String index_page = await rscript.createDocument("index.html");
 ```
 
+Alternatively you can leave a blank filepath reference and instead pass the data as a string.
+
+```dart
+String index_page = await rscript.createDocument("", data='Some data <?rs include("other_data.txt"); ?>');
+```
+
 ### By Example
 
 ##### Start/End tag, comments, functioncall
