@@ -19,7 +19,7 @@ String index_page = await rscript.createDocument("index.html");
 Alternatively you can leave a blank filepath reference and instead pass the data as a string.
 
 ```dart
-String index_page = await rscript.createDocument("", data='Some data <?rs include("other_data.txt"); ?>');
+String index_page = await rscript.createDocument("", data: 'Some data <?rs include("other_data.txt"); ?>');
 ```
 
 ### By Example
