@@ -72,6 +72,12 @@ main() async {
   } else {
     print("sheet foreach\t\t\t\t[\u001b[32mOK\u001b[0m]");  
   }
+
+  if(await test_if()) {
+    print("{% if %}\t\t\t\t[\u001b[31mFailed\u001b[0m]");
+  } else {
+    print("{% if %}\t\t\t\t[\u001b[32mOK\u001b[0m]");  
+  } 
 }
 
 Future<bool> test_include() async {
@@ -144,7 +150,7 @@ Future<bool> test_wrap_and_content() async {
 
 Future<bool> test_printVariable() async {
   bool bugs = true;
-  Arguments args = new Arguments();
+  Arguments args = Arguments();
   args.set("test", "rocketship");
   args.set("condition", true);
   RestedScript restedscript = RestedScript(root: "/app/bin/pages/");
@@ -157,7 +163,7 @@ Future<bool> test_printVariable() async {
 
 Future<bool> test_foreach() async {
   bool bugs = true;
-  Arguments args = new Arguments();
+  Arguments args = Arguments();
   List<String> numbers = [];
   numbers.add("4");
   numbers.add("5");
@@ -183,7 +189,7 @@ Future<bool> test_debug() async {
 
 Future<bool> test_map() async {
   bool bugs = true;
-  Arguments args = new Arguments();
+  Arguments args = Arguments();
   Map<String, dynamic> testmap = { "name": "Terminator", "version": 2000 };
   args.set("movies", testmap);
   RestedScript restedscript = RestedScript(root: "/app/bin/pages/");
@@ -230,7 +236,7 @@ Future<bool> test_sheet() async {
 Future<bool> test_sheetForEach() async {
   bool bugs = true;
 
-  Arguments args = new Arguments();
+  Arguments args = Arguments();
 
   Sheet sheet = Sheet();
   sheet.addColumn("String", "Letters");
@@ -256,3 +262,32 @@ Future<bool> test_sheetForEach() async {
   
   return bugs;
 }
+
+Future<bool> test_if() async {
+  bool bugs = true;
+  Arguments args = Arguments();
+
+  args.setBool("zero", false);
+  args.setBool("one", true);
+  args.setBool("two", false);
+  args.setBool("five", true);
+  
+  RestedScript restedscript = RestedScript(root: "/app/bin/pages/");
+  String result = await restedscript.createDocument("ifsentence.html", args: args);
+  if(result == "block0block1block5") {
+
+    args.set("zero", true);
+    args.set("one", false);
+    args.set("two", true);
+    args.set("five", false);
+    
+    restedscript = RestedScript(root: "/app/bin/pages/");
+    result = await restedscript.createDocument("ifsentence.html", args: args);
+    if(result=="") {
+      bugs = false;
+    }
+  }
+  return bugs;
+}
+
+

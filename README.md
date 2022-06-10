@@ -103,6 +103,27 @@ Currently only supports a handfull of features and only String type.
 ### IMPORTANT
 Templating only works on variables passed to the arguments object in Dart. This is because templates are processed before RestedScript. Work is being done to implement a pre/post option for either RestedScript or templates.
 
+##### Templating - if
+Currently if only checks on boolean values in Arguments. If the boolean variable key specified in the if conditional is not present then it equates to false. You can specify `not` or `!` if you need an inverted check. You can also prefix the variable key with a `!`. If uses `{% %}` notation. An if needs to be closed with an endif. Nesting is supported.
+
+```
+{% if thisVariableEvalutesToTrue %}
+...
+{% endif %}
+
+{% if not invertsMeaningEvenIfVariableDoesntExist %}
+...
+{% endif %}
+
+{% if ! canAlsoBeWrittenAsSuch %}
+...
+{% endif %}
+
+{% if !andSuch %}
+...
+{% endif %}
+```
+
 ##### Templating - foreach using list
 ```
 <html>

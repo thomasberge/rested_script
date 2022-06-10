@@ -1,0 +1,3 @@
+#!/bin/bash
+docker build -t rested_script_test . && docker run -it rested_script_test
+

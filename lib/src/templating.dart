@@ -5,6 +5,159 @@ import 'dart:async';
 import 'processes.dart';
 import 'sheets.dart';
 
+/*
+  Helper class for dealing with nested structures. Allows for keeping track of block ids.
+
+  Increment to next non-used value when stepping in, add to map as open (false).
+  Decrement to last non-used value when stepping out, set to closed (true).
+*/
+class NestingMap {
+  int level = -1;
+  Map<int, bool> _idmap = {};
+  Map<int, String> conditionals = {};
+  Map<int, String> blocks = {};
+  String data = "";
+
+  void setNextId() {
+    level++;
+    _idmap[level] = false;
+  }
+
+  String getPreviousId() {
+    int i = level;
+    while(_idmap[i] == true) {
+      i--;
+      if(i < 0) {
+        break;
+      }
+    }
+    _idmap[i] = true;
+    return i.toString();
+  }
+
+  void addConditional(String conditional) {
+    conditionals[level] = conditional;
+  }
+}
+
+String extractConditional(String prefix, String data) {
+  StringTools c_cursor = StringTools(data);
+  c_cursor.deleteCharacters(('{% ' + prefix + ' ').length);
+  c_cursor.moveTo(' %}');
+  c_cursor.deleteCharacters(' %}'.length);
+  return c_cursor.data;
+}
+
+bool evaluateConditional(int _pid, String conditional) {
+
+  //print("Evaluating >" + conditional + "<");
+  bool not = false;
+  List<String> elements = conditional.split(' ');
+  
+  if(elements[0].toLowerCase() == 'not' || elements[0].toLowerCase() == '!') {
+    not = true;
+  } else if (elements[0].substring(0,1) == '!') {
+    not = true;
+    elements[0] = elements[0].substring(1, elements[0].length);
+  }
+
+  if(pman.processes[_pid].args.isVar(elements[0])) {
+    if(pman.processes[_pid].args.type(elements[0]) == "Bool") {
+      if(not) {
+        return !pman.processes[_pid].args.vars[elements[0]];
+      } else {
+        return pman.processes[_pid].args.vars[elements[0]];
+      }
+    } else {
+      if(not) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  } else {
+      if(not) {
+        return true;
+      } else {
+        return false;
+      }
+  }
+}
+
+Future<String> ifConditions(int _pid, String data) async {
+  debug(_pid, "ifConditions()");
+  
+  while(data.contains("{% if")) {
+    StringTools cursor = new StringTools(data);
+
+    if(cursor.moveTo('{% if')) {
+
+      bool run = true;
+      int level = 0;
+      bool keep = true;
+      //String conditional = "";
+      List<String> conditionals = [];
+
+      while(run) {
+       
+        String element = cursor.moveToListElement(["{% if", "{% endif %}"]);
+
+        if(element == "{% if") {
+          if(level == 0) {
+            cursor.selectFromTo("{% ", " %}", includeArguments: true);
+            conditionals.add(extractConditional('if', cursor.getSelection()));
+            cursor.replaceSelection("{%START%}");
+            level++;
+          } else {
+            level++;
+            cursor.move();
+          }
+          //String conditional = cursor.getFromTo("{% ", " %}", includeArguments: true);
+          //cursor.moveTo('%}');
+          //cursor.insertAtPosition(ifMap.level.toString());
+
+          // Add the conditional to the ifMap, which will be stored the 'if's id as key.
+
+        // If we encounter an 'endif' we simply add the previous unclosed id to the end
+        // of the endif statement. See NestedMap for details on how previousId() works.
+        } else if(element == "{% endif %}") {
+          level--;
+          if(level == 0) {
+            cursor.selectFromTo("{% ", " %}", includeArguments: true);
+            cursor.replaceSelection("{%STOP%}");
+            run = false;
+          } else {
+            cursor.move();
+          }
+          //cursor.moveTo('%}');
+          //cursor.insertAtPosition(ifMap.getPreviousId());
+
+        } else {
+          run = false;
+        }
+      }
+
+      // doesnt work for multiple conditionals (elseif, else), needs refactoring
+      for(int i = 0;i<conditionals.length;i++) {
+        keep = evaluateConditional(_pid, conditionals[i]);
+      }
+      
+      if(!keep) {
+        cursor.reset();
+        cursor.deleteFromTo("{%START%}", "{%STOP%}", includeArguments: true);
+      } else {
+        cursor.reset();
+        cursor.moveTo("{%START%}");
+        cursor.deleteCharacters("{%START%}".length);
+        cursor.moveTo("{%STOP%}");
+        cursor.deleteCharacters("{%STOP%}".length);
+      }
+    }
+    data = cursor.data;
+  }
+  return data;
+}
+
 Future<String> wrapDocument(int _pid, String data, String root) async {
     debug(_pid, "wrapDocument()");
     StringTools cursor = new StringTools(data);

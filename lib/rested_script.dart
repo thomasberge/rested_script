@@ -1,6 +1,6 @@
 // RestedScript
 // https://github.com/thomasberge/rested_script
-// © 2021 Thomas Sebastian Berge
+// © 2022 Thomas Sebastian Berge
 
 import 'dart:io';
 import 'dart:async';
@@ -135,6 +135,7 @@ class RestedScript {
     debug(_pid, "processLines()");
     String document = removeComments(_pid, lines);
     document = await wrapDocument(_pid, document, root);
+    document = await ifConditions(_pid, document);
     document = processForEach(document, _pid);
     document = await processRSTags(_pid, document);
     return document;
