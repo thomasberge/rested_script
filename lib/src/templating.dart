@@ -70,24 +70,26 @@ bool evaluateConditional(int _pid, String conditional) {
 
   if(pman.processes[_pid].args.isVar(elements[0])) {
     if(pman.processes[_pid].args.type(elements[0]) == "Bool") {
+      return pman.processes[_pid].args.vars[elements[0]];
+      /*
       if(not) {
         return !pman.processes[_pid].args.vars[elements[0]];
       } else {
         return pman.processes[_pid].args.vars[elements[0]];
-      }
+      }*/
     } else {
-      if(not) {
-        return true;
-      } else {
+      //if(not) {
+      //  return true;
+      //} else {
         return false;
-      }
+      //}
     }
   } else {
-      if(not) {
-        return true;
-      } else {
+      //if(not) {
+      //  return true;
+      //} else {
         return false;
-      }
+      //}
   }
 }
 
