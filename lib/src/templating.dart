@@ -57,7 +57,6 @@ bool evaluateConditional(int _pid, String conditional) {
   bool not = false;
   List<String> elements = conditional.split(' ');
   
-  /*
   if(elements[0].toLowerCase() == 'not' || elements[0].toLowerCase() == '!') {
     print("not or !");
     not = true;
@@ -65,7 +64,7 @@ bool evaluateConditional(int _pid, String conditional) {
     print("variable prefixed with !");
     not = true;
     elements[0] = elements[0].substring(1, elements[0].length);
-  }*/
+  }
 
   print("NOT is " + not.toString());
 
@@ -138,22 +137,24 @@ Future<String> ifConditions(int _pid, String data) async {
         }
       }
 
+      print("CONDITIONALS COUNT=" + conditionals.length.toString());
+
       // doesnt work for multiple conditionals (elseif, else), needs refactoring
       for(int i = 0;i<conditionals.length;i++) {
         keep = evaluateConditional(_pid, conditionals[i]);
       }
       
-      if(!keep) {
-        print("NOT KEEP. DELETING.");
-        cursor.reset();
-        cursor.deleteFromTo("{%START%}", "{%STOP%}", includeArguments: true);
-      } else {
+      if(keep) {
         print("KEEP. ONLY REMOVING TAGS.");
         cursor.reset();
         cursor.moveTo("{%START%}");
         cursor.deleteCharacters("{%START%}".length);
         cursor.moveTo("{%STOP%}");
         cursor.deleteCharacters("{%STOP%}".length);
+      } else {
+        print("NOT KEEP. DELETING.");
+        cursor.reset();
+        cursor.deleteFromTo("{%START%}", "{%STOP%}", includeArguments: true);
       }
     }
     data = cursor.data;
