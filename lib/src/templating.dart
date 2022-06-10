@@ -49,47 +49,39 @@ String extractConditional(String prefix, String data) {
 }
 
 bool evaluateConditional(int _pid, String conditional) {
-  print("EVALUATING " + conditional);
-  print("CURRENT MAP: ");
-  pman.processes[_pid].args.debug();
+  //pman.processes[_pid].args.debug();
 
   //print("Evaluating >" + conditional + "<");
   bool not = false;
   List<String> elements = conditional.split(' ');
   
   if(elements[0].toLowerCase() == 'not' || elements[0].toLowerCase() == '!') {
-    print("not or !");
     not = true;
   } else if (elements[0].substring(0,1) == '!') {
-    print("variable prefixed with !");
     not = true;
     elements[0] = elements[0].substring(1, elements[0].length);
   }
 
-  print("NOT is " + not.toString());
-  print("elements[0]==" + elements[0]);
   if(pman.processes[_pid].args.isVar(elements[0])) {
     if(pman.processes[_pid].args.type(elements[0]) == "Bool") {
-      return pman.processes[_pid].args.vars[elements[0]];
-      /*
       if(not) {
         return !pman.processes[_pid].args.vars[elements[0]];
       } else {
         return pman.processes[_pid].args.vars[elements[0]];
-      }*/
+      }
     } else {
-      //if(not) {
-      //  return true;
-      //} else {
+      if(not) {
+        return true;
+      } else {
         return false;
-      //}
+      }
     }
   } else {
-      //if(not) {
-      //  return true;
-      //} else {
+      if(not) {
+        return true;
+      } else {
         return false;
-      //}
+      }
   }
 }
 
@@ -139,22 +131,18 @@ Future<String> ifConditions(int _pid, String data) async {
         }
       }
 
-      print("CONDITIONALS COUNT=" + conditionals.length.toString());
-
       // doesnt work for multiple conditionals (elseif, else), needs refactoring
       for(int i = 0;i<conditionals.length;i++) {
-        keep = evaluateConditional(_pid, conditionals[i]);
+        keep = evaluateConditional(_pid, conditionals[0]);
       }
       
       if(keep) {
-        print("KEEP. ONLY REMOVING TAGS.");
         cursor.reset();
         cursor.moveTo("{%START%}");
         cursor.deleteCharacters("{%START%}".length);
         cursor.moveTo("{%STOP%}");
         cursor.deleteCharacters("{%STOP%}".length);
       } else {
-        print("NOT KEEP. DELETING.");
         cursor.reset();
         cursor.deleteFromTo("{%START%}", "{%STOP%}", includeArguments: true);
       }
