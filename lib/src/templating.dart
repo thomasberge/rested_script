@@ -57,6 +57,7 @@ bool evaluateConditional(int _pid, String conditional) {
   bool not = false;
   List<String> elements = conditional.split(' ');
   
+  /*
   if(elements[0].toLowerCase() == 'not' || elements[0].toLowerCase() == '!') {
     print("not or !");
     not = true;
@@ -64,7 +65,7 @@ bool evaluateConditional(int _pid, String conditional) {
     print("variable prefixed with !");
     not = true;
     elements[0] = elements[0].substring(1, elements[0].length);
-  }
+  }*/
 
   print("NOT is " + not.toString());
 
