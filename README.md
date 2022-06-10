@@ -143,6 +143,10 @@ Currently if only checks on boolean values in Arguments. If the boolean variable
 </html>
 ```
 
+##### Templating - variablemap dump
+Inspired by twig, a `{{ dump() }}` will dump all key/values in the arguments object to the cli/stdout. It will only dump once even if it is present multiple times.
+
+
 ### Testing
 There is a test script included in /test that runs all functions in different variations and tests against the result. A report is written to console where each function is graded with a OK or Failed. If changes are made to rested_script then new functions should be added and all functions tested again to make sure they pass.
 

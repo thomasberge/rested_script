@@ -158,6 +158,15 @@ Future<String> ifConditions(int _pid, String data) async {
   return data;
 }
 
+Future<String> templateDebugDump(_pid, document) async {
+  if(document.contains("{{ dump() }}")) {
+    pman.processes[_pid].args.debug();
+    return document.replaceAll("{{ dump() }}", "");
+  } else {
+    return document;
+  }
+}
+
 Future<String> wrapDocument(int _pid, String data, String root) async {
     debug(_pid, "wrapDocument()");
     StringTools cursor = new StringTools(data);

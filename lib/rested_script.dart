@@ -136,6 +136,7 @@ class RestedScript {
     String document = removeComments(_pid, lines);
     document = await wrapDocument(_pid, document, root);
     document = await ifConditions(_pid, document);
+    document = await templateDebugDump(_pid, document);
     document = processForEach(document, _pid);
     document = await processRSTags(_pid, document);
     return document;
