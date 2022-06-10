@@ -49,17 +49,24 @@ String extractConditional(String prefix, String data) {
 }
 
 bool evaluateConditional(int _pid, String conditional) {
+  print("EVALUATING " + conditional);
+  print("CURRENT MAP: ");
+  pman.processes[_pid].args.debug();
 
   //print("Evaluating >" + conditional + "<");
   bool not = false;
   List<String> elements = conditional.split(' ');
   
   if(elements[0].toLowerCase() == 'not' || elements[0].toLowerCase() == '!') {
+    print("not or !");
     not = true;
   } else if (elements[0].substring(0,1) == '!') {
+    print("variable prefixed with !");
     not = true;
     elements[0] = elements[0].substring(1, elements[0].length);
   }
+
+  print("NOT is " + not.toString());
 
   if(pman.processes[_pid].args.isVar(elements[0])) {
     if(pman.processes[_pid].args.type(elements[0]) == "Bool") {
@@ -112,11 +119,6 @@ Future<String> ifConditions(int _pid, String data) async {
             level++;
             cursor.move();
           }
-          //String conditional = cursor.getFromTo("{% ", " %}", includeArguments: true);
-          //cursor.moveTo('%}');
-          //cursor.insertAtPosition(ifMap.level.toString());
-
-          // Add the conditional to the ifMap, which will be stored the 'if's id as key.
 
         // If we encounter an 'endif' we simply add the previous unclosed id to the end
         // of the endif statement. See NestedMap for details on how previousId() works.
@@ -129,8 +131,6 @@ Future<String> ifConditions(int _pid, String data) async {
           } else {
             cursor.move();
           }
-          //cursor.moveTo('%}');
-          //cursor.insertAtPosition(ifMap.getPreviousId());
 
         } else {
           run = false;
@@ -143,9 +143,11 @@ Future<String> ifConditions(int _pid, String data) async {
       }
       
       if(!keep) {
+        print("NOT KEEP. DELETING.");
         cursor.reset();
         cursor.deleteFromTo("{%START%}", "{%STOP%}", includeArguments: true);
       } else {
+        print("KEEP. ONLY REMOVING TAGS.");
         cursor.reset();
         cursor.moveTo("{%START%}");
         cursor.deleteCharacters("{%START%}".length);

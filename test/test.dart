@@ -284,7 +284,14 @@ Future<bool> test_if() async {
     restedscript = RestedScript(root: "/app/bin/pages/");
     result = await restedscript.createDocument("ifsentence.html", args: args);
     if(result=="") {
-      bugs = false;
+
+      args.setBool("variable", true);
+      
+      restedscript = RestedScript(root: "/app/bin/pages/");
+      result = await restedscript.createDocument("ifsentence2.html", args: args);
+      if(result == "visible") {
+        bugs = false;
+      }
     }
   }
   return bugs;
