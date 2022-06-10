@@ -67,7 +67,7 @@ bool evaluateConditional(int _pid, String conditional) {
   }
 
   print("NOT is " + not.toString());
-
+  print("elements[0]==" + elements[0]);
   if(pman.processes[_pid].args.isVar(elements[0])) {
     if(pman.processes[_pid].args.type(elements[0]) == "Bool") {
       return pman.processes[_pid].args.vars[elements[0]];
