@@ -41,6 +41,7 @@ class NestingMap {
 }
 
 String extractConditional(String prefix, String data) {
+  debug(_pid, "extractConditional()");
   StringTools c_cursor = StringTools(data);
   c_cursor.deleteCharacters(('{% ' + prefix + ' ').length);
   c_cursor.moveTo(' %}');
@@ -49,9 +50,8 @@ String extractConditional(String prefix, String data) {
 }
 
 bool evaluateConditional(int _pid, String conditional) {
-  //pman.processes[_pid].args.debug();
+  debug(_pid, "evaluateConditional()");
 
-  //print("Evaluating >" + conditional + "<");
   bool not = false;
   List<String> elements = conditional.split(' ');
   
@@ -85,7 +85,7 @@ bool evaluateConditional(int _pid, String conditional) {
   }
 }
 
-Future<String> ifConditions(int _pid, String data) async {
+Future<String> ifConditions(int _pid, String data) async {  
   debug(_pid, "ifConditions()");
   
   while(data.contains("{% if")) {
