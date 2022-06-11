@@ -74,10 +74,16 @@ main() async {
   }
 
   if(await test_if()) {
-    print("{% if %}\t\t\t\t[\u001b[31mFailed\u001b[0m]");
+    print("template if\t\t\t\t[\u001b[31mFailed\u001b[0m]");
   } else {
-    print("{% if %}\t\t\t\t[\u001b[32mOK\u001b[0m]");  
+    print("template if\t\t\t\t[\u001b[32mOK\u001b[0m]");  
   } 
+
+  if(await test_template_variables()) {
+    print("template variales\t\t\t[\u001b[31mFailed\u001b[0m]");
+  } else {
+    print("template variables\t\t\t[\u001b[32mOK\u001b[0m]");  
+  }   
 }
 
 Future<bool> test_include() async {
@@ -297,4 +303,16 @@ Future<bool> test_if() async {
   return bugs;
 }
 
-
+Future<bool> test_template_variables() async {
+  bool bugs = true;
+  RestedScript restedscript = RestedScript(root: "/app/bin/pages/");
+  Arguments args = Arguments();
+  args.setBool("argvar", true);
+  String result = await restedscript.createDocument("template_variables.html", args: args);
+  if(result == "true") {
+    bugs = false;
+  } else {
+    print(result);
+  }
+  return bugs;
+}

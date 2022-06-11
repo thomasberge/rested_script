@@ -133,12 +133,20 @@ class RestedScript {
 
   Future<String> processLines(List<String> lines, int _pid) async {
     debug(_pid, "processLines()");
+
+    // Comments
     String document = removeComments(_pid, lines);
+
+    // Templating
     document = await wrapDocument(_pid, document, root);
     document = await ifConditions(_pid, document);
     document = await templateDebugDump(_pid, document);
     document = processForEach(document, _pid);
+    document = await echoVariables(_pid, document);
+
+    // Restedscript
     document = await processRSTags(_pid, document);
+
     return document;
   }
 

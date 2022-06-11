@@ -30,6 +30,8 @@ class Process {
     DateTime createdAt = DateTime.now();
     List<String> strings = [];
 
+    Map<String, dynamic> _variables = {};
+
     Process(this.args) {
         createdAt = DateTime.now();
     }
@@ -41,5 +43,56 @@ class Process {
 
     String getString(int index){
         return strings[index].substring(1, strings[index].length - 1);
+    }
+
+    void set(String key, dynamic variable) {
+        _variables[key] = variable;
+    }
+
+    dynamic get(String key) {
+        if(args.isVar(key)) {
+            print("found argvar " + key);
+            return args.get(key);
+        } else if(_variables.containsKey(key)) {
+            print("found procvar " + key);
+            return _variables[key];
+        } else {
+            print("didn't find var " + key);
+            return null;
+        }
+    }
+
+    bool evaluate(String conditional) {
+        bool not = false;
+        List<String> elements = conditional.split(' ');
+        
+        if(elements[0].toLowerCase() == 'not' || elements[0].toLowerCase() == '!') {
+            not = true;
+        } else if (elements[0].substring(0,1) == '!') {
+            not = true;
+            elements[0] = elements[0].substring(1, elements[0].length);
+        }
+
+        if(args.isVar(elements[0])) {
+            if(args.type(elements[0]) == "Bool") {
+            if(not) {
+                return !args.vars[elements[0]];
+            } else {
+                return args.vars[elements[0]];
+            }
+            } else {
+            if(not) {
+                return true;
+            } else {
+                return false;
+            }
+            }
+        } else {
+            if(not) {
+                return true;
+            } else {
+                return false;
+            }
+        }
     }
 }

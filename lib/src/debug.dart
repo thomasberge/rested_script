@@ -9,7 +9,7 @@ Map<String, String> envVars = Platform.environment;
 
 void debug(int _pid, String message) {
   if(pman.processes[_pid].debugEnabled) {
-    if(envVars['DEBUG.STEPIN']) {
+    if(envVars['DEBUG.STEPIN'] == 'TRUE') {
       breakpoint(_pid);
     }
     print(message);

@@ -40,49 +40,13 @@ class NestingMap {
   }
 }
 
-String extractConditional(String prefix, String data) {
+String extractConditional(int _pid, String prefix, String data) {
   debug(_pid, "extractConditional()");
   StringTools c_cursor = StringTools(data);
   c_cursor.deleteCharacters(('{% ' + prefix + ' ').length);
   c_cursor.moveTo(' %}');
   c_cursor.deleteCharacters(' %}'.length);
   return c_cursor.data;
-}
-
-bool evaluateConditional(int _pid, String conditional) {
-  debug(_pid, "evaluateConditional()");
-
-  bool not = false;
-  List<String> elements = conditional.split(' ');
-  
-  if(elements[0].toLowerCase() == 'not' || elements[0].toLowerCase() == '!') {
-    not = true;
-  } else if (elements[0].substring(0,1) == '!') {
-    not = true;
-    elements[0] = elements[0].substring(1, elements[0].length);
-  }
-
-  if(pman.processes[_pid].args.isVar(elements[0])) {
-    if(pman.processes[_pid].args.type(elements[0]) == "Bool") {
-      if(not) {
-        return !pman.processes[_pid].args.vars[elements[0]];
-      } else {
-        return pman.processes[_pid].args.vars[elements[0]];
-      }
-    } else {
-      if(not) {
-        return true;
-      } else {
-        return false;
-      }
-    }
-  } else {
-      if(not) {
-        return true;
-      } else {
-        return false;
-      }
-  }
 }
 
 Future<String> ifConditions(int _pid, String data) async {  
@@ -106,7 +70,7 @@ Future<String> ifConditions(int _pid, String data) async {
         if(element == "{% if") {
           if(level == 0) {
             cursor.selectFromTo("{% ", " %}", includeArguments: true);
-            conditionals.add(extractConditional('if', cursor.getSelection()));
+            conditionals.add(extractConditional(_pid, 'if', cursor.getSelection()));
             cursor.replaceSelection("{%START%}");
             level++;
           } else {
@@ -133,7 +97,8 @@ Future<String> ifConditions(int _pid, String data) async {
 
       // doesnt work for multiple conditionals (elseif, else), needs refactoring
       for(int i = 0;i<conditionals.length;i++) {
-        keep = evaluateConditional(_pid, conditionals[0]);
+        //keep = evaluateConditional(_pid, conditionals[0]);
+        keep = pman.processes[_pid].evaluate(conditionals[0]);
       }
       
       if(keep) {
@@ -159,6 +124,24 @@ Future<String> templateDebugDump(_pid, document) async {
   } else {
     return document;
   }
+}
+
+Future<String> echoVariables(int _pid, String data) async {
+  StringTools cursor = new StringTools(data);
+  while(cursor.moveTo('{{ ')) {
+    cursor.selectFromTo('{{ ', ' }}', includeArguments: true);
+    cursor.deleteEdgesOfSelection();
+    cursor.deleteEdgesOfSelection();
+    cursor.deleteEdgesOfSelection();
+    String key = cursor.getSelection();
+    dynamic value = pman.processes[_pid].get(key);
+    if(value == null) {
+      cursor.replaceSelection("");
+    } else {
+      cursor.replaceSelection(value.toString());
+    }
+  }
+  return cursor.data;
 }
 
 Future<String> wrapDocument(int _pid, String data, String root) async {
