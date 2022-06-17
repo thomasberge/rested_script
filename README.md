@@ -103,6 +103,17 @@ Currently only supports a handfull of features and only String type.
 ### IMPORTANT
 Templating is inspired by jinja2 and Twig and will aim to be able to run Twig syntax without any transformations. Templating is executed before RestedScript tags, and so RestedScript variables will not be available within the templating language. After templating is processed however the RestedScript code is executed running with the same internal process id, thus making any variables set in template available in code.
 
+##### Templating - comments
+
+```
+{# this will be removed #}
+
+Multi-line comments
+{# are also
+supported #} and they
+don't need {#to be }
+```
+
 ##### Templating - variables
 You can echo variables either passed as arguments in code or set within the templating by enclosing the variable name with double curly braces and a space. If the variable is not present or is null, a blank string will replace the statement.
 

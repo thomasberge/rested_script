@@ -53,12 +53,12 @@ class RestedScript {
     debugEnabled = debug;
   }
 
-
   /*
   *    TEMPLATING FUNCTIONS
   */
 
   Future<String> include(int _pid, String data) async {
+    debug(_pid, "templace_include()");
     StringTools cursor = StringTools(data);
 
     while(cursor.moveTo('{% include ')) {
@@ -161,6 +161,7 @@ class RestedScript {
 
     // Comments
     String document = removeComments(_pid, lines);
+    document = await removeTemplateComments(_pid, document);
 
     // Templating
     document = await wrapDocument(_pid, document, root);

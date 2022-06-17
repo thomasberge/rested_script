@@ -40,13 +40,35 @@ class NestingMap {
   }
 }
 
+Future<String> removeTemplateComments(int _pid, String data) async {
+  debug(_pid, "ifConditions()");
+  StringTools cursor = StringTools(data);
+
+  while(cursor.moveTo("{#")) {
+    cursor.startSelection();
+    if(cursor.moveTo("#}")) {
+      cursor.move();
+      cursor.move();
+      cursor.stopSelection();
+      cursor.deleteSelection();
+      cursor.reset();
+    }
+    else {
+      print("Error: missing end comment #}");
+      break;
+    }
+  }
+
+  return cursor.data;
+}
+
 String extractConditional(int _pid, String prefix, String data) {
   debug(_pid, "extractConditional()");
-  StringTools c_cursor = StringTools(data);
-  c_cursor.deleteCharacters(('{% ' + prefix + ' ').length);
-  c_cursor.moveTo(' %}');
-  c_cursor.deleteCharacters(' %}'.length);
-  return c_cursor.data;
+  StringTools cursor = StringTools(data);
+  cursor.deleteCharacters(('{% ' + prefix + ' ').length);
+  cursor.moveTo(' %}');
+  cursor.deleteCharacters(' %}'.length);
+  return cursor.data;
 }
 
 
@@ -286,14 +308,19 @@ Future<String> wrapDocument(int _pid, String data, String root) async {
  */
 
 Future<String> forin(int _pid, String data) async {
-  debug(_pid, "forin()");
+  debug(_pid, "template_forin()");
 
   StringTools cursor = StringTools(data);
 
   while(cursor.moveTo("{% for ")) {
-    int position = cursor.position;
+    cursor.startSelection();
+    //int position = cursor.position;
 
-    cursor.deleteEdgesOfSelection(characters: 3);
+    //cursor.deleteEdgesOfSelection(characters: 3);
+    cursor.moveTo("%}");
+    cursor.move();
+    cursor.move();
+    cursor.stopSelection();
     String expression = cursor.getSelection();
     cursor.replaceSelection("{%START-FOR%}");
 
@@ -320,16 +347,33 @@ Future<String> forin(int _pid, String data) async {
       }
     }
 
+    //print(">" + cursor.data + "<");
+    print("EXPRESSION=" + expression);
+
     cursor.reset();
     cursor.selectFromTo("{%START-FOR%}", "{%STOP-FOR%}", includeArguments: true);
     String forBlock = cursor.getSelection();
+
+    
+
+    // Return with original data if the for loop has wrong number of elements
     List<String> expList = expression.trim().split(' ');
-    if(expList.length != 4) {
+
+    if(expList.length != 6) {
       print("Error in for-in loop");
-      break;
-    } else {
-      print(expList.toString());
+      return data;
     }
+
+    // Return with original data if the array is not present in process or arguments
+    var list = pman.processes[_pid].get(expList[2]);
+
+    if(list == null) {
+      print("Unable to find array '" + expList[4] + "'");
+      return data;
+    }
+
+
+
   }
   return data;
   //if(pman.processes[_pid].varType(''))

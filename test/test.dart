@@ -15,7 +15,8 @@ List<Function> functions = [
   test_if,
   test_template_variables,
   test_template_forin,
-  test_template_include
+  test_template_include,
+  test_template_comments
 ];
 
 main() async {
@@ -299,7 +300,7 @@ Future<bool> test_template_forin() async {
   RestedScript restedscript = RestedScript(root: "/app/bin/pages/");
   Arguments args = Arguments();
   List<String> users = ["admin", "user1", "user2"];
-  args.set("users", users);
+  args.setList("users", users);
   String result = await restedscript.createDocument("forin.html", args: args);
   if(result == "admin;user1;user2;") {
     bugs = false;
@@ -317,6 +318,18 @@ Future<bool> test_template_include() async {
     bugs = false;
   } else {
     errors['template_include()'] = "Unexpected value (" + result + ")";
+  }
+  return bugs;
+}
+
+Future<bool> test_template_comments() async {
+  bool bugs = true;
+  RestedScript restedscript = RestedScript(root: "/app/bin/pages/");
+  String result = await restedscript.createDocument("template_comments.html");
+  if(result == "I am visible!") {
+    bugs = false;
+  } else {
+    errors['template_comments()'] = "Unexpected value (" + result + ")";
   }
   return bugs;
 }
