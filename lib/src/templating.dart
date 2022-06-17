@@ -305,6 +305,12 @@ Future<String> wrapDocument(int _pid, String data, String root) async {
 
 /*
  *    for <var> in <key>
+
+      1.  Replaces a for/endfor tag-pair (it tackles nesting) with START-FOR/STOP-FOR tags, while copying the
+          for expression to a separate string.
+      2.  The content of the START/STOP-tags are copied to a forBlock.
+      3.  The for-expression is broken up and the List (doesnt support maps yet) are fetched from the process.
+      4.  Parses the forBlock one time for each List element, replacing with the corresponding values.
  */
 
 Future<String> forin(int _pid, String data) async {
@@ -314,9 +320,6 @@ Future<String> forin(int _pid, String data) async {
 
   while(cursor.moveTo("{% for ")) {
     cursor.startSelection();
-    //int position = cursor.position;
-
-    //cursor.deleteEdgesOfSelection(characters: 3);
     cursor.moveTo("%}");
     cursor.move();
     cursor.move();
@@ -347,14 +350,11 @@ Future<String> forin(int _pid, String data) async {
       }
     }
 
-    //print(">" + cursor.data + "<");
-    print("EXPRESSION=" + expression);
-
     cursor.reset();
     cursor.selectFromTo("{%START-FOR%}", "{%STOP-FOR%}", includeArguments: true);
     String forBlock = cursor.getSelection();
-
-    
+    forBlock = forBlock.replaceAll("{%START-FOR%}", "");
+    forBlock = forBlock.replaceAll("{%STOP-FOR%}", "");
 
     // Return with original data if the for loop has wrong number of elements
     List<String> expList = expression.trim().split(' ');
@@ -365,16 +365,26 @@ Future<String> forin(int _pid, String data) async {
     }
 
     // Return with original data if the array is not present in process or arguments
-    var list = pman.processes[_pid].get(expList[2]);
+    var list = pman.processes[_pid].get(expList[4]);
 
     if(list == null) {
       print("Unable to find array '" + expList[4] + "'");
       return data;
     }
 
+    // Check that the var is indeed a List
+    if(list is List == false) {
+      print("Error in for-in loop, the argument " + expList[4] + " is not a List. Only Lists are currently supported.");
+      return data;
+    }
 
+    String combinedBlocks = "";
+    for(var element in list) {
+      pman.processes[_pid].set(expList[2], element.toString());
+      combinedBlocks = combinedBlocks + await echoVariables(_pid, forBlock);
+    }
 
+    cursor.replaceSelection(combinedBlocks);
   }
-  return data;
-  //if(pman.processes[_pid].varType(''))
+  return cursor.data;
 }

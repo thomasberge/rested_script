@@ -305,7 +305,7 @@ Future<bool> test_template_forin() async {
   if(result == "admin;user1;user2;") {
     bugs = false;
   } else {
-    print(result);
+    errors['template_forin()'] = "Unexpected value (" + result + ")";
   }
   return bugs;
 }

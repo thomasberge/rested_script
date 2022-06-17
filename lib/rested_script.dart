@@ -161,9 +161,9 @@ class RestedScript {
 
     // Comments
     String document = removeComments(_pid, lines);
-    document = await removeTemplateComments(_pid, document);
 
     // Templating
+    document = await removeTemplateComments(_pid, document);
     document = await wrapDocument(_pid, document, root);
     document = await include(_pid, document);
     document = await ifConditions(_pid, document);

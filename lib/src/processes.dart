@@ -31,6 +31,8 @@ class Process {
     List<String> strings = [];
 
     Map<String, dynamic> _variables = {};
+    //List<Map<String, dynamic>> _private_variables = [];
+    Map<String, dynamic> _private_variables = {};
 
     Process(this.args) {
         createdAt = DateTime.now();
@@ -49,15 +51,27 @@ class Process {
         _variables[key] = variable;
     }
 
+    void set_private(String key, dynamic variable) {
+        _private_variables[key] = variable;
+    }
+
+    void reset_private_variables(int nesting_id) {
+        // remember to make a way to create private variables depending on their nesting context
+        // so that only variables created in that context are deleted.
+    }
+
     dynamic get(String key) {
-        if(args.isVar(key)) {
-            print("found argvar " + key);
+        if(_private_variables.containsKey(key)) {
+            //print("found private variable " + key);
+            return _private_variables[key];
+        } else if(args.isVar(key)) {
+            //print("found argvar " + key);
             return args.get(key);
         } else if(_variables.containsKey(key)) {
-            print("found procvar " + key);
+            //print("found procvar " + key);
             return _variables[key];
         } else {
-            print("didn't find var " + key);
+            //print("didn't find var " + key);
             return null;
         }
     }
