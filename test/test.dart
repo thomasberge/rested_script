@@ -1,89 +1,66 @@
 import 'rested_script.dart';
 
+Map<String, String> errors = {};
+List<Function> functions = [
+  test_debug,
+  test_wrap_and_content,
+  test_include,
+  test_download,
+  test_print,
+  test_flag,
+  test_printVariable,
+  test_varDeclarations,
+  test_comments,
+  test_sheet,
+  test_if,
+  test_template_variables,
+  test_template_forin,
+  test_template_include
+];
+
 main() async {
-  if(await test_debug()) {
-    print("debug()\t\t\t\t\t[\u001b[31mFailed\u001b[0m]");
-  } else {
-    print("debug()\t\t\t\t\t[\u001b[32mOK\u001b[0m]");  
-  } 
+  print("\r\n  ------------------------------------------------------------------");
+  print("  :: Running Test Script                                          ::");
+  print("  ------------------------------------------------------------------");  
+  int cleared = 0;
+  int failed = 0;
 
-  if(await test_wrap_and_content()) {
-    print("wrap() / content()\t\t\t[\u001b[31mFailed\u001b[0m]");
-  } else {
-    print("wrap() / content()\t\t\t[\u001b[32mOK\u001b[0m]");
+  for(Function f in functions) {
+    if(await f()) {
+      failed++;
+      String error_message = "Unknown error";
+      if(errors.containsKey(getFunctionName(f))) {
+        error_message = errors[getFunctionName(f)].toString();
+      }
+      print("  \u001b[31m" + getFunctionName(f) + " failed. Reason: " + error_message + "\u001b[0m");
+    } else {
+      cleared++;
+    }
   }
 
-  if(await test_include()) {
-    print("include()\t\t\t\t[\u001b[31mFailed\u001b[0m]");
+  if(failed == 0) {
+    print("  :: [" + cleared.toString() + "/" + cleared.toString() + "] tests completed without fail.                        ::");
   } else {
-    print("include()\t\t\t\t[\u001b[32mOK\u001b[0m]");
+  print("\r\n  ------------------------------------------------------------------");  
+    print("  ::  [\u001b[31m" + cleared.toString() + "\u001b[0m/" + (cleared + failed).toString() + "] tests completed without fail. Review errors above.  ::");
   }
+  print("  ------------------------------------------------------------------\r\n");
+}
 
-  if(await test_download()) {
-    print("download()\t\t\t\t[\u001b[31mFailed\u001b[0m]");
-  } else {
-    print("download()\t\t\t\t[\u001b[32mOK\u001b[0m]");
-  }  
 
-  if(await test_print()) {
-    print("print() / echo()\t\t\t[\u001b[31mFailed\u001b[0m]");
-  } else {
-    print("print() / echo()\t\t\t[\u001b[32mOK\u001b[0m]");
+/*  UTILITY FUNCTIONS   
+*/
+
+void printErrorMessages(String key) {
+  for(MapEntry e in errors.entries) {
+    if(e.key == key) {
+      print(errors[key]);
+    }
   }
+}
 
-  if(await test_flag()) {
-    print("flag()\t\t\t\t\t[\u001b[31mFailed\u001b[0m]");
-  } else {
-    print("flag()\t\t\t\t\t[\u001b[32mOK\u001b[0m]");
-  }
-
-  if(await test_printVariable()) {
-    print("print(variable)\t\t\t\t[\u001b[31mFailed\u001b[0m]");
-  } else {
-    print("print(variable)\t\t\t\t[\u001b[32mOK\u001b[0m]");  
-  }
-
-  if(await test_foreach()) {
-    print("{{foreach}}\t\t\t\t[\u001b[31mFailed\u001b[0m]");
-  } else {
-    print("{{foreach}}\t\t\t\t[\u001b[32mOK\u001b[0m]");  
-  }
-
-  if(await test_varDeclarations()) {
-    print("variable declarations\t\t\t[\u001b[31mFailed\u001b[0m]");
-  } else {
-    print("variable declarations\t\t\t[\u001b[32mOK\u001b[0m]");  
-  }
-
-  if(await test_comments()) {
-    print("comments\t\t\t\t[\u001b[31mFailed\u001b[0m]");
-  } else {
-    print("comments\t\t\t\t[\u001b[32mOK\u001b[0m]");  
-  }
-
-  if(await test_sheet()) {
-    print("sheet\t\t\t\t\t[\u001b[31mFailed\u001b[0m]");
-  } else {
-    print("sheet\t\t\t\t\t[\u001b[32mOK\u001b[0m]");  
-  }
-
-  if(await test_sheetForEach()) {
-    print("sheet foreach\t\t\t\t[\u001b[31mFailed\u001b[0m]");
-  } else {
-    print("sheet foreach\t\t\t\t[\u001b[32mOK\u001b[0m]");  
-  }
-
-  if(await test_if()) {
-    print("template if\t\t\t\t[\u001b[31mFailed\u001b[0m]");
-  } else {
-    print("template if\t\t\t\t[\u001b[32mOK\u001b[0m]");  
-  } 
-
-  if(await test_template_variables()) {
-    print("template variales\t\t\t[\u001b[31mFailed\u001b[0m]");
-  } else {
-    print("template variables\t\t\t[\u001b[32mOK\u001b[0m]");  
-  }   
+String getFunctionName(Function f) {
+  return ""+f.toString().split("from Function 'test_", )[1].split("': ")[0] + "()".toString();  // yes this is bad
 }
 
 Future<bool> test_include() async {
@@ -313,6 +290,33 @@ Future<bool> test_template_variables() async {
     bugs = false;
   } else {
     print(result);
+  }
+  return bugs;
+}
+
+Future<bool> test_template_forin() async {
+  bool bugs = true;
+  RestedScript restedscript = RestedScript(root: "/app/bin/pages/");
+  Arguments args = Arguments();
+  List<String> users = ["admin", "user1", "user2"];
+  args.set("users", users);
+  String result = await restedscript.createDocument("forin.html", args: args);
+  if(result == "admin;user1;user2;") {
+    bugs = false;
+  } else {
+    print(result);
+  }
+  return bugs;
+}
+
+Future<bool> test_template_include() async {
+  bool bugs = true;
+  RestedScript restedscript = RestedScript(root: "/app/bin/pages/");
+  String result = await restedscript.createDocument("index2.html");
+  if(result == "1234567890") {
+    bugs = false;
+  } else {
+    errors['template_include()'] = "Unexpected value (" + result + ")";
   }
   return bugs;
 }

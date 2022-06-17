@@ -2,22 +2,28 @@ import 'package:string_tools/string_tools.dart';
 import 'sheets.dart';
 
 class Arguments {
-  Map<String, String> _varNames = {};
+  Map<String, String> _varTypes = {};
   Map vars = new Map<String, dynamic>();
 
   void set(String key, dynamic value) {
+
     if(value is Map) {
-      _varNames[key] = "Map";
+      _varTypes[key] = "Map";
+    } else if(value is List) {
+      _varTypes[key] = "List";
+    } else if(value is bool) {
+      _varTypes[key] = "Bool";
     }
+
     vars[key] = value;
   }
 
   List<String> getIntKeys() {
     List<String> keys = [];
-    for(String k in _varNames.keys) {
+    for(String k in _varTypes.keys) {
       if(k == "Int") {
-        if(_varNames[k] != null) {
-          print("Int variable: " +  _varNames[k].toString());
+        if(_varTypes[k] != null) {
+          print("Int variable: " +  _varTypes[k].toString());
         }
       }
     }
@@ -28,7 +34,7 @@ class Arguments {
 
   void setSheet(String _key, Sheet _value) {
     if(isVar(_key) == false) {
-      _varNames[_key] = "Sheet";
+      _varTypes[_key] = "Sheet";
       vars[_key] = _value;
     } else {
       print("Error: Variable " + _key + " already declared.");
@@ -37,7 +43,7 @@ class Arguments {
 
   void setString(String _key, String _value) {
     if(isVar(_key) == false) {
-      _varNames[_key] = "String";
+      _varTypes[_key] = "String";
       vars[_key] = _value;
     } else {
       print("Error: Variable " + _key + " already declared.");
@@ -46,7 +52,7 @@ class Arguments {
 
   void setInt(String key, int value) {
     if(isVar(key) == false) {
-      _varNames[key] = "Int";
+      _varTypes[key] = "Int";
       vars[key] = value;
     } else {
       print("Error: Variable " + key + " already declared.");
@@ -55,7 +61,7 @@ class Arguments {
 
   void updateInt(String key, int value) {
     if(isVar(key) == true) {
-      _varNames[key] = "Int";
+      _varTypes[key] = "Int";
       vars[key] = value;
     } else {
       print("Error: Integer " + key + " does not exist.");
@@ -64,7 +70,7 @@ class Arguments {
 
   void setDouble(String key, int value) {
     if(isVar(key) == false) {
-      _varNames[key] = "Double";
+      _varTypes[key] = "Double";
       vars[key] = value;
     } else {
       print("Error: Variable " + key + " already declared.");
@@ -73,7 +79,7 @@ class Arguments {
 
   void setBool(String key, bool value) {
     if(isVar(key) == false) {
-      _varNames[key] = "Bool";
+      _varTypes[key] = "Bool";
       vars[key] = value;
     } else {
       print("Error: Variable " + key + " already declared.");
@@ -82,7 +88,7 @@ class Arguments {
 
   void setList(String key, List<dynamic> value) {
     if(isVar(key) == false) {
-      _varNames[key] = "List";
+      _varTypes[key] = "List";
       vars[key] = value;
     } else {
       print("Error: Variable " + key + " already declared.");
@@ -91,7 +97,7 @@ class Arguments {
 
   void setMap(String key, Map<String, dynamic> value) {
     if(isVar(key) == false) {
-      _varNames[key] = "Map";
+      _varTypes[key] = "Map";
       vars[key] = value;
     } else {
       print("Error: Variable " + key + " already declared.");
@@ -117,8 +123,8 @@ class Arguments {
   }
 
   String getType(String _key) {
-    if (_varNames.containsKey(_key)) {
-      return _varNames[_key].toString();
+    if (_varTypes.containsKey(_key)) {
+      return _varTypes[_key].toString();
     } else {
       print("Key " + _key + " does not exist in rscript stringmap.");
       return "%KEYDOESNOTEXIST%";
@@ -126,16 +132,16 @@ class Arguments {
   }
 
   String type(String key) {
-    return _varNames[key].toString();
+    return _varTypes[key].toString();
   }
 
   bool isVar(String key) {
-    return _varNames.containsKey(key);
+    return _varTypes.containsKey(key);
   }
 
   bool isNumberVar(String key) {
-    if(_varNames.containsKey(key)) {
-      if(_varNames[key] == "Int" || _varNames[key] == "Double") {
+    if(_varTypes.containsKey(key)) {
+      if(_varTypes[key] == "Int" || _varTypes[key] == "Double") {
         return true;
       } else {
         return false;

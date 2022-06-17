@@ -110,6 +110,17 @@ You can echo variables either passed as arguments in code or set within the temp
 {{ variablename }}
 ```
 
+##### Templating - include
+Includes work relative to the path that the RestedScript object was initialized. It will fetch the file from disk, process it and then return the processed result. The included file will have access to all of the same arguments and process variables. Note that those values are passed by reference, not by value.
+
+```
+{% include ('header.txt') %}
+
+Some text.
+
+{% include ('footer.txt') %}
+```
+
 ##### Templating - if
 Currently if only checks on boolean values in Arguments. If the boolean variable key specified in the if conditional is not present then it equates to false. You can specify `not` or `!` if you need an inverted check. You can also prefix the variable key with a `!`. If uses `{% %}` notation. An if needs to be closed with an endif. Nesting is supported.
 

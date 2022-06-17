@@ -51,13 +51,13 @@ class Process {
 
     dynamic get(String key) {
         if(args.isVar(key)) {
-            print("found argvar " + key);
+            //print("found argvar " + key);
             return args.get(key);
         } else if(_variables.containsKey(key)) {
-            print("found procvar " + key);
+            //print("found procvar " + key);
             return _variables[key];
         } else {
-            print("didn't find var " + key);
+            //print("didn't find var " + key);
             return null;
         }
     }

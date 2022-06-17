@@ -1,0 +1,9 @@
+<tbody>
+    {% for menu in menus %}
+        <tr> 
+            {% for item in items %}
+                <td> {{ menu[item.name] }} </td>
+            {% endfor %}                
+        </tr>
+    {% endfor %}
+</tbody>

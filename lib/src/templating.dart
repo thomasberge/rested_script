@@ -49,6 +49,11 @@ String extractConditional(int _pid, String prefix, String data) {
   return c_cursor.data;
 }
 
+
+/*
+ *    if
+ */
+
 Future<String> ifConditions(int _pid, String data) async {  
   debug(_pid, "ifConditions()");
   
@@ -71,7 +76,7 @@ Future<String> ifConditions(int _pid, String data) async {
           if(level == 0) {
             cursor.selectFromTo("{% ", " %}", includeArguments: true);
             conditionals.add(extractConditional(_pid, 'if', cursor.getSelection()));
-            cursor.replaceSelection("{%START%}");
+            cursor.replaceSelection("{%START-IF%}");
             level++;
           } else {
             level++;
@@ -84,7 +89,7 @@ Future<String> ifConditions(int _pid, String data) async {
           level--;
           if(level == 0) {
             cursor.selectFromTo("{% ", " %}", includeArguments: true);
-            cursor.replaceSelection("{%STOP%}");
+            cursor.replaceSelection("{%STOP-IF%}");
             run = false;
           } else {
             cursor.move();
@@ -103,13 +108,13 @@ Future<String> ifConditions(int _pid, String data) async {
       
       if(keep) {
         cursor.reset();
-        cursor.moveTo("{%START%}");
-        cursor.deleteCharacters("{%START%}".length);
-        cursor.moveTo("{%STOP%}");
-        cursor.deleteCharacters("{%STOP%}".length);
+        cursor.moveTo("{%START-IF%}");
+        cursor.deleteCharacters("{%START-IF%}".length);
+        cursor.moveTo("{%STOP-IF%}");
+        cursor.deleteCharacters("{%STOP-IF%}".length);
       } else {
         cursor.reset();
-        cursor.deleteFromTo("{%START%}", "{%STOP%}", includeArguments: true);
+        cursor.deleteFromTo("{%START-IF%}", "{%STOP-IF%}", includeArguments: true);
       }
     }
     data = cursor.data;
@@ -126,13 +131,15 @@ Future<String> templateDebugDump(_pid, document) async {
   }
 }
 
+/*
+ *    <var> echo
+ */
+
 Future<String> echoVariables(int _pid, String data) async {
   StringTools cursor = new StringTools(data);
   while(cursor.moveTo('{{ ')) {
     cursor.selectFromTo('{{ ', ' }}', includeArguments: true);
-    cursor.deleteEdgesOfSelection();
-    cursor.deleteEdgesOfSelection();
-    cursor.deleteEdgesOfSelection();
+    cursor.deleteEdgesOfSelection(characters: 3);
     String key = cursor.getSelection();
     dynamic value = pman.processes[_pid].get(key);
     if(value == null) {
@@ -143,6 +150,10 @@ Future<String> echoVariables(int _pid, String data) async {
   }
   return cursor.data;
 }
+
+/*
+ *    wrap, to be refactored
+ */
 
 Future<String> wrapDocument(int _pid, String data, String root) async {
     debug(_pid, "wrapDocument()");
@@ -179,6 +190,10 @@ Future<String> wrapDocument(int _pid, String data, String root) async {
     }
     return data;
   }
+
+/*
+ *    deprecated forEach
+ */
 
   String processForEach(String data, int _pid) {
     StringTools dparser = StringTools(data);
@@ -265,3 +280,57 @@ Future<String> wrapDocument(int _pid, String data, String root) async {
 
     return dparser.data;
   }
+
+/*
+ *    for <var> in <key>
+ */
+
+Future<String> forin(int _pid, String data) async {
+  debug(_pid, "forin()");
+
+  StringTools cursor = StringTools(data);
+
+  while(cursor.moveTo("{% for ")) {
+    int position = cursor.position;
+
+    cursor.deleteEdgesOfSelection(characters: 3);
+    String expression = cursor.getSelection();
+    cursor.replaceSelection("{%START-FOR%}");
+
+    int level = 0;
+    bool run = true;
+
+    while(run) {
+      String element = cursor.moveToListElement(["{% for ", "{% endfor %}"]);
+
+      if(element == "{% for ") {
+        level++;
+        cursor.move();
+      } else if(element == "{% endfor %}") {
+        if(level == 0) {
+          cursor.selectFromTo("{% ", " %}", includeArguments: true);
+          cursor.replaceSelection("{%STOP-FOR%}");
+          run = false;
+        } else {
+          level--;
+          cursor.move();
+        }
+      } else {
+        run = false;
+      }
+    }
+
+    cursor.reset();
+    cursor.selectFromTo("{%START-FOR%}", "{%STOP-FOR%}", includeArguments: true);
+    String forBlock = cursor.getSelection();
+    List<String> expList = expression.trim().split(' ');
+    if(expList.length != 4) {
+      print("Error in for-in loop");
+      break;
+    } else {
+      print(expList.toString());
+    }
+  }
+  return data;
+  //if(pman.processes[_pid].varType(''))
+}

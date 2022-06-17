@@ -53,6 +53,31 @@ class RestedScript {
     debugEnabled = debug;
   }
 
+
+  /*
+  *    TEMPLATING FUNCTIONS
+  */
+
+  Future<String> include(int _pid, String data) async {
+    StringTools cursor = StringTools(data);
+
+    while(cursor.moveTo('{% include ')) {
+      cursor.startSelection();
+      String filepath = cursor.getFromTo("('", "')");
+      cursor.moveTo('%}');
+      cursor.move();
+      cursor.move();
+      cursor.stopSelection();
+      String processed_file = await parse(filepath, _pid);
+      cursor.replaceSelection(processed_file);
+    }
+
+    return cursor.data;
+  }
+  /*
+  *    END TEMPLATING FUNCTIONS
+  */
+
   String root;
 
   // Temp duplicate of createDocument but with no file reading capabilities.
@@ -139,9 +164,11 @@ class RestedScript {
 
     // Templating
     document = await wrapDocument(_pid, document, root);
+    document = await include(_pid, document);
     document = await ifConditions(_pid, document);
     document = await templateDebugDump(_pid, document);
-    document = processForEach(document, _pid);
+    //document = processForEach(document, _pid);
+    document = await forin(_pid, document);
     document = await echoVariables(_pid, document);
 
     // Restedscript
