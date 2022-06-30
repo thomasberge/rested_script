@@ -64,7 +64,7 @@ class Process {
         if(_private_variables.containsKey(key)) {
             //print("found private variable " + key);
             return _private_variables[key];
-        } else if(args.isVar(key)) {
+        } else if(args.vars.containsKey(key)) {
             //print("found argvar " + key);
             return args.get(key);
         } else if(_variables.containsKey(key)) {
@@ -87,19 +87,19 @@ class Process {
             elements[0] = elements[0].substring(1, elements[0].length);
         }
 
-        if(args.isVar(elements[0])) {
-            if(args.type(elements[0]) == "Bool") {
-            if(not) {
-                return !args.vars[elements[0]];
-            } else {
-                return args.vars[elements[0]];
-            }
-            } else {
-            if(not) {
-                return true;
-            } else {
-                return false;
-            }
+        if(args.vars.containsKey(elements[0])) {
+            if(args.vars[elements[0]] is bool) {
+                if(not) {
+                    return !args.vars[elements[0]];
+                } else {
+                    return args.vars[elements[0]];
+                }
+                } else {
+                if(not) {
+                    return true;
+                } else {
+                    return false;
+                }
             }
         } else {
             if(not) {

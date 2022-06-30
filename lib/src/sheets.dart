@@ -52,6 +52,10 @@ class Sheet {
         }
     }
 
+    String get type {
+        return "Sheet";
+    }
+
     int addRow(List<String> _row){
         for(int i = 0; i<_row.length; i++) {
             if(i < headers.length) {

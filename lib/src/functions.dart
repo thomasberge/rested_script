@@ -79,7 +79,7 @@ void sheet_addColumn(int _pid, String _data) {
   String key = cursor.getSelection().trim();
 
   if(pman.processes[_pid].args.isVar(key)) {
-    if(pman.processes[_pid].args.getType(key) == "Sheet") {
+    if(pman.processes[_pid].args.type(key) == "Sheet") {
       cursor.move();
       cursor.stopSelection();
       cursor.deleteSelection();

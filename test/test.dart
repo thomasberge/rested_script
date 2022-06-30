@@ -16,7 +16,8 @@ List<Function> functions = [
   test_template_variables,
   test_template_forin,
   test_template_include,
-  test_template_comments
+  test_template_comments,
+  test_simpleif
 ];
 
 main() async {
@@ -181,7 +182,7 @@ Future<bool> test_map() async {
   if(result == "This is a rocketship!") {
     bugs = false;
   }
-  print(args.getVarTable());
+  print(args.vars.toString());
   return bugs;
 }
 
@@ -251,10 +252,10 @@ Future<bool> test_if() async {
   bool bugs = true;
   Arguments args = Arguments();
 
-  args.setBool("zero", false);
-  args.setBool("one", true);
-  args.setBool("two", false);
-  args.setBool("five", true);
+  args.set("zero", false);
+  args.set("one", true);
+  args.set("two", false);
+  args.set("five", true);
   
   RestedScript restedscript = RestedScript(root: "/app/bin/pages/");
   String result = await restedscript.createDocument("ifsentence.html", args: args);
@@ -269,7 +270,7 @@ Future<bool> test_if() async {
     result = await restedscript.createDocument("ifsentence.html", args: args);
     if(result=="") {
 
-      args.setBool("variable", true);
+      args.set("variable", true);
       
       restedscript = RestedScript(root: "/app/bin/pages/");
       result = await restedscript.createDocument("ifsentence2.html", args: args);
@@ -281,11 +282,28 @@ Future<bool> test_if() async {
   return bugs;
 }
 
+Future<bool> test_simpleif() async {
+  bool bugs = true;
+  Arguments args = Arguments();
+
+  args.set("somebool", true);
+  
+  RestedScript restedscript = RestedScript(root: "/app/bin/pages/");
+  String result = await restedscript.stringToDoc("{% if somebool %}test{% endif %}", args: args);
+  if(result == "test") {
+    bugs = false;
+  } else {
+    //errors['simpleif()'] = "Unexpected value (" + result + ")";
+    print(result.toString());
+  }
+  return bugs;
+}
+
 Future<bool> test_template_variables() async {
   bool bugs = true;
   RestedScript restedscript = RestedScript(root: "/app/bin/pages/");
   Arguments args = Arguments();
-  args.setBool("argvar", true);
+  args.set("argvar", true);
   String result = await restedscript.createDocument("template_variables.html", args: args);
   if(result == "true") {
     bugs = false;

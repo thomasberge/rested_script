@@ -311,7 +311,7 @@ void initInt(int _pid, String data) {
       value = replaceVariableNamesWithContent(_pid, value);
       String? number = evaluateAsNumber(value);
       if(number != null) {
-        pman.processes[_pid].args.setInt(key, toNumber(number).toInt());
+        pman.processes[_pid].args.set(key, toNumber(number).toInt());
       } else {
         print("Error: Invalid parameter value, unable to parse to integer: " + value);
       }
@@ -334,7 +334,7 @@ void updateInt(int _pid, String key, String data) {
       value = replaceVariableNamesWithContent(_pid, value);
       String? number = evaluateAsNumber(value);
       if(number != null) {
-        pman.processes[_pid].args.updateInt(key, toNumber(number).toInt());
+        pman.processes[_pid].args.set(key, toNumber(number).toInt());
       } else {
         print("Error: Invalid parameter value, unable to parse to integer: " + value);
       }
@@ -374,7 +374,7 @@ String replaceVariableNamesWithContent(int _pid, String data) {
       cursor.startSelection();
       cursor.moveWhileRegex(exp2);
       cursor.stopSelection();
-      if(pman.processes[_pid].args.isNumberVar(cursor.getSelection())) {
+      if(pman.processes[_pid].args.isNumber(cursor.getSelection())) {
         //print("Declared variable found: " + cursor.getSelection());
         cursor.replaceSelection(pman.processes[_pid].args.get(cursor.getSelection()).toString());
       } else {
@@ -396,7 +396,7 @@ void initBool(int _pid, String data) {
     String key = cursor.getAllBeforePosition().trim();
     if(keyFormat.hasMatch(key)) {
       bool value = true;
-      pman.processes[_pid].args.setBool(key, value);      
+      pman.processes[_pid].args.set(key, value);      
     } else {
       print("Error: Invalid variable name in " + key + "\r\nPlease only use a-z, A-Z, 0-9, underscore or dash.");
     }
@@ -425,7 +425,7 @@ void initString(int _pid, String data) {
       }
       value = elems.join();
       
-      pman.processes[_pid].args.setString(key, value);      
+      pman.processes[_pid].args.set(key, value);      
     } else {
       print("Error: Invalid variable name in " + key + "\r\nPlease only use a-z, A-Z, 0-9, underscore or dash.");
     }
@@ -447,7 +447,7 @@ String combineToOneString(int _pid, String _data) {
         elements[i] = cursor.data;
       } else {
         if(pman.processes[_pid].args.isVar(cursor.data)) {
-          elements[i] = pman.processes[_pid].args.getAsString(cursor.data);
+          elements[i] = pman.processes[_pid].args.vars[cursor.data].toString();
         } else {
           elements[i] = "";
           print("Error: Unknown variable " + cursor.data);

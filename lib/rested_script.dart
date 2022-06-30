@@ -226,7 +226,7 @@ class RestedScript {
 
         String name = cursordata.split(new RegExp(r"[ =]"))[0];
         if(pman.processes[_pid].args.isVar(name)) {
-          String type = pman.processes[_pid].args.getType(name);
+          String type = pman.processes[_pid].args.type(name);
           switch(type) {
             case "Int": {
               variables.updateInt(_pid, name, cursordata);
@@ -374,7 +374,7 @@ class RestedScript {
         String name = cursor.data.split("=")[0].trim();
         if(pman.processes[_pid].args.isVar(name)) {
           command.add("update");
-          command.add(pman.processes[_pid].args.getType(name));
+          command.add(pman.processes[_pid].args.type(name));
           command.add(name);
         } else {
           print("Error: Unknown variable " + cursor.data);

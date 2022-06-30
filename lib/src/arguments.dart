@@ -6,17 +6,29 @@ class Arguments {
   Map vars = new Map<String, dynamic>();
 
   void set(String key, dynamic value) {
-
-    if(value is Map) {
-      _varTypes[key] = "Map";
-    } else if(value is List) {
-      _varTypes[key] = "List";
-    } else if(value is bool) {
-      _varTypes[key] = "Bool";
+    if(vars.containsKey(key)) {
+      if(vars[key].runtimeType != value.runtimeType) {
+        print("Error setting value to existing variable " + key + ": the variable is already of type " + vars[key].type.toString() + " while the incoming value is of type " + value.type.toString());
+        return;
+      }
     }
-
     vars[key] = value;
   }
+
+  dynamic get(String key) {
+    if (vars.containsKey(key)) {
+      return vars[key];
+    } else {
+      print("Key " + key + " does not exist in rscript stringmap.");
+      return "%KEYDOESNOTEXIST%";
+    }
+  }
+
+  String toString() {
+    return vars.toString();
+  }
+
+  // ----------------- OLD $#"! THAT NEEDS TO GO
 
   List<String> getIntKeys() {
     List<String> keys = [];
@@ -30,59 +42,12 @@ class Arguments {
     return keys;
   }
 
-  // ----------------- INSTANTIATE VARIABLES ----------------------
-
   void setSheet(String _key, Sheet _value) {
     if(isVar(_key) == false) {
       _varTypes[_key] = "Sheet";
       vars[_key] = _value;
     } else {
       print("Error: Variable " + _key + " already declared.");
-    }
-  }
-
-  void setString(String _key, String _value) {
-    if(isVar(_key) == false) {
-      _varTypes[_key] = "String";
-      vars[_key] = _value;
-    } else {
-      print("Error: Variable " + _key + " already declared.");
-    }
-  }
-
-  void setInt(String key, int value) {
-    if(isVar(key) == false) {
-      _varTypes[key] = "Int";
-      vars[key] = value;
-    } else {
-      print("Error: Variable " + key + " already declared.");
-    }
-  }
-
-  void updateInt(String key, int value) {
-    if(isVar(key) == true) {
-      _varTypes[key] = "Int";
-      vars[key] = value;
-    } else {
-      print("Error: Integer " + key + " does not exist.");
-    }
-  }
-
-  void setDouble(String key, int value) {
-    if(isVar(key) == false) {
-      _varTypes[key] = "Double";
-      vars[key] = value;
-    } else {
-      print("Error: Variable " + key + " already declared.");
-    }
-  }  
-
-  void setBool(String key, bool value) {
-    if(isVar(key) == false) {
-      _varTypes[key] = "Bool";
-      vars[key] = value;
-    } else {
-      print("Error: Variable " + key + " already declared.");
     }
   }
 
@@ -104,42 +69,16 @@ class Arguments {
     }
   }
 
-  String getAsString(String key) {
-    if (vars.containsKey(key)) {
-      return vars[key].toString();
-    } else {
-      print("Key " + key + " does not exist in rscript stringmap.");
-      return "%KEYDOESNOTEXIST%";
-    }
-  }
-
-  dynamic get(String key) {
-    if (vars.containsKey(key)) {
-      return vars[key];
-    } else {
-      print("Key " + key + " does not exist in rscript stringmap.");
-      return "%KEYDOESNOTEXIST%";
-    }
-  }
-
-  String getType(String _key) {
-    if (_varTypes.containsKey(_key)) {
-      return _varTypes[_key].toString();
-    } else {
-      print("Key " + _key + " does not exist in rscript stringmap.");
-      return "%KEYDOESNOTEXIST%";
-    }
-  }
-
   String type(String key) {
-    return _varTypes[key].toString();
+    //print(vars[key].type.toString());
+    return vars[key].type.toString();
   }
 
   bool isVar(String key) {
     return _varTypes.containsKey(key);
   }
 
-  bool isNumberVar(String key) {
+  bool isNumber(String key) {
     if(_varTypes.containsKey(key)) {
       if(_varTypes[key] == "Int" || _varTypes[key] == "Double") {
         return true;
@@ -151,21 +90,8 @@ class Arguments {
     }
   }
 
-  double getDouble(String key) {
-    if(isNumberVar(key)) {
-      return double.parse(vars[key]);
-    } else {
-      print("Error: " + key + " is not of type Double");
-      return 0.1;
-    }
-  }
-
-  String getVarTable() {
-    return vars.toString();
-  }
-
   void debug() {
-    print(getVarTable().toString());
+    print(vars.toString());
   }
 
   // ------ UNDOCUMENTED OLD STUFF DOWN BELOW THIS LINE ------------- //

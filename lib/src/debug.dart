@@ -26,7 +26,7 @@ void breakpoint(int _pid) {
             } else if(line == '?') {
             print("\nCOMMANDS:\nvar (dumps all variables)");
             } else if(line == 'var') {
-            print(pman.processes[_pid].args.getVarTable());
+            print(pman.processes[_pid].args.vars.toString());
             }
         }
     }
