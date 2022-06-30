@@ -8,7 +8,7 @@ class Arguments {
   void set(String key, dynamic value) {
     if(vars.containsKey(key)) {
       if(vars[key].runtimeType != value.runtimeType) {
-        print("Error setting value to existing variable " + key + ": the variable is already of type " + vars[key].type.toString() + " while the incoming value is of type " + value.type.toString());
+        print("Error setting value to existing variable " + key + ": the variable is already of type " + vars[key].runtimeType.toString() + " while the incoming value is of type " + value.runtimeType.toString());
         return;
       }
     }
