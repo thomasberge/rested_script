@@ -78,30 +78,41 @@ class Process {
 
     bool evaluate(String conditional) {
         bool not = false;
+        String key = "";
         List<String> elements = conditional.split(' ');
-        
+      
         if(elements[0].toLowerCase() == 'not' || elements[0].toLowerCase() == '!') {
             not = true;
+            key = elements[1]; 
         } else if (elements[0].substring(0,1) == '!') {
             not = true;
-            elements[0] = elements[0].substring(1, elements[0].length);
+            key = elements[0].substring(1);
+        } else {
+            key = elements[0];
         }
 
-        if(args.vars.containsKey(elements[0])) {
-            if(args.vars[elements[0]] is bool) {
-                if(not) {
-                    return !args.vars[elements[0]];
-                } else {
-                    return args.vars[elements[0]];
-                }
-                } else {
+        if(args.vars.containsKey(key)) {
+            if(args.vars[key] == null) {                // if it has key but null value
                 if(not) {
                     return true;
                 } else {
                     return false;
                 }
             }
-        } else {
+            else if(args.vars[key] is bool) {           // if its bool
+                if(not) {
+                    return !args.vars[key];
+                } else {
+                    return args.vars[key];
+                }
+                } else {                                // if its any other type
+                if(not) {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        } else {                                        // if it doesn't exist
             if(not) {
                 return true;
             } else {

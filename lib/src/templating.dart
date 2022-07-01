@@ -87,12 +87,12 @@ Future<String> ifConditions(int _pid, String data) async {
       bool run = true;
       int level = 0;
       bool keep = true;
-      //String conditional = "";
       List<String> conditionals = [];
+      int elsecounter = 0;
 
       while(run) {
        
-        String element = cursor.moveToListElement(["{% if", "{% endif %}"]);
+        String element = cursor.moveToListElement(["{% if", "{% else %}", "{% endif %}"]);
 
         if(element == "{% if") {
           if(level == 0) {
@@ -102,6 +102,19 @@ Future<String> ifConditions(int _pid, String data) async {
             level++;
           } else {
             level++;
+            cursor.move();
+          }
+
+        } else if(element == "{% else %}") {
+          if(level == 1) {
+            elsecounter++;
+            if(elsecounter > 1) {
+              print("Error: too many else statements.");
+              return data;
+            }
+            cursor.selectFromTo("{% ", " %}", includeArguments: true);
+            cursor.replaceSelection("{%ELSE%}");
+          } else {
             cursor.move();
           }
 
@@ -122,21 +135,37 @@ Future<String> ifConditions(int _pid, String data) async {
         }
       }
 
-      // doesnt work for multiple conditionals (elseif, else), needs refactoring
+      if(conditionals.length == 0) {
+        print("Error processing if-statement, conditional arguments not parsed correctly.");
+        return data;
+      }
+
       for(int i = 0;i<conditionals.length;i++) {
         //keep = evaluateConditional(_pid, conditionals[0]);
         keep = pman.processes[_pid].evaluate(conditionals[0]);
       }
-      
       if(keep) {
         cursor.reset();
-        cursor.moveTo("{%START-IF%}");
-        cursor.deleteCharacters("{%START-IF%}".length);
-        cursor.moveTo("{%STOP-IF%}");
-        cursor.deleteCharacters("{%STOP-IF%}".length);
+        if(elsecounter==0) {
+          cursor.moveTo("{%START-IF%}");
+          cursor.deleteCharacters("{%START-IF%}".length);
+          cursor.moveTo("{%STOP-IF%}");
+          cursor.deleteCharacters("{%STOP-IF%}".length);
+        } else {
+          cursor.moveTo("{%START-IF%}");
+          cursor.deleteCharacters("{%START-IF%}".length);
+          cursor.deleteFromTo("{%ELSE%}", "{%STOP-IF%}", includeArguments: true);
+        }
       } else {
-        cursor.reset();
-        cursor.deleteFromTo("{%START-IF%}", "{%STOP-IF%}", includeArguments: true);
+        if(elsecounter>0) {
+          cursor.reset();
+          cursor.deleteFromTo("{%START-IF%}", "{%ELSE%}", includeArguments: true);
+          cursor.moveTo("{%STOP-IF%}");
+          cursor.deleteCharacters("{%STOP-IF%}".length);
+        } else {
+          cursor.reset();
+          cursor.deleteFromTo("{%START-IF%}", "{%STOP-IF%}", includeArguments: true);
+        }
       }
     }
     data = cursor.data;

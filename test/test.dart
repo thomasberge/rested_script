@@ -259,7 +259,7 @@ Future<bool> test_if() async {
   
   RestedScript restedscript = RestedScript(root: "/app/bin/pages/");
   String result = await restedscript.createDocument("ifsentence.html", args: args);
-  if(result == "block0block1block5") {
+  if(result == "block0block5") {
 
     args.set("zero", true);
     args.set("one", false);
@@ -278,6 +278,8 @@ Future<bool> test_if() async {
         bugs = false;
       }
     }
+  } else {
+    print(result);
   }
   return bugs;
 }
@@ -289,12 +291,22 @@ Future<bool> test_simpleif() async {
   args.set("somebool", true);
   
   RestedScript restedscript = RestedScript(root: "/app/bin/pages/");
-  String result = await restedscript.stringToDoc("{% if somebool %}test{% endif %}", args: args);
+  String result = await restedscript.stringToDoc("{% if somebool %}test{% else %}test2{% endif %}", args: args);
   if(result == "test") {
-    bugs = false;
+    args.set("somebool", false);
+    result = await restedscript.stringToDoc("{% if somebool %}test{% else %}test2{% endif %}", args: args);
+    if(result == "test2") {
+      args.set("stringparam", "I am a string!");
+      result = await restedscript.stringToDoc("{% if stringparam %}test3{% endif %}", args: args);
+      if(result == "test3") {
+        bugs = false;
+      }
+    } else {
+      print(">"+result.toString()+"<");
+    }
   } else {
     //errors['simpleif()'] = "Unexpected value (" + result + ")";
-    print(result.toString());
+    print(">"+result.toString()+"<");
   }
   return bugs;
 }

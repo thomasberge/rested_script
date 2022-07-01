@@ -71,7 +71,7 @@ Currently only supports a handfull of features and only String type.
 ?>
 ```
 
-##### Calculations and manipulations
+##### Calculations and concatenations
 ```
 <?rs 
     Int number = 10;
@@ -133,10 +133,14 @@ Some text.
 ```
 
 ##### Templating - if
-Currently if only checks on boolean values in Arguments. If the boolean variable key specified in the if conditional is not present then it equates to false. You can specify `not` or `!` if you need an inverted check. You can also prefix the variable key with a `!`. If uses `{% %}` notation. An if needs to be closed with an endif. Nesting is supported.
+If the variable in the argument is not a boolean the check evaluates to True if the variable exists and is not null. If it is a boolean the value of the boolean is used. You can specify `not` or `!` if you need an inverted check. You can also prefix the variable key with a `!`. 
+
+If uses `{% %}` notation. An it needs to be closed with an endif. Nesting is supported. You can also add an else clause, but currently elseif is not supported.
 
 ```
 {% if thisVariableEvalutesToTrue %}
+...
+{% else %}
 ...
 {% endif %}
 
