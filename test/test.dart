@@ -17,7 +17,8 @@ List<Function> functions = [
   test_template_forin,
   test_template_include,
   test_template_comments,
-  test_simpleif
+  test_simpleif,
+  test_mapvariable
 ];
 
 main() async {
@@ -360,6 +361,24 @@ Future<bool> test_template_comments() async {
     bugs = false;
   } else {
     errors['template_comments()'] = "Unexpected value (" + result + ")";
+  }
+  return bugs;
+}
+
+Future<bool> test_mapvariable() async {
+  bool bugs = true;
+  Arguments args = Arguments();
+
+  Map<String, String> somemap = { "username": "ninjaman", "occupation": "ninja", "dangerlevel": "over 9000" };
+
+  args.set("user", somemap);
+  
+  RestedScript restedscript = RestedScript(root: "/app/bin/pages/");
+  String result = await restedscript.stringToDoc("{{ user.username }}", args: args);
+  if(result == "ninjaman") {
+    bugs = false;
+  } else {
+    print(">"+result.toString()+"<");
   }
   return bugs;
 }

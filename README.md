@@ -121,6 +121,12 @@ You can echo variables either passed as arguments in code or set within the temp
 {{ variablename }}
 ```
 
+If the variable is a Map/JSON you can access attributes by using period followed by the attribute name.
+
+```
+{{ variablename.attribute }}
+```
+
 ##### Templating - include
 Includes work relative to the path that the RestedScript object was initialized. It will fetch the file from disk, process it and then return the processed result. The included file will have access to all of the same arguments and process variables. Note that those values are passed by reference, not by value.
 

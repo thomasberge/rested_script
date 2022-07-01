@@ -61,11 +61,40 @@ class Process {
     }
 
     dynamic get(String key) {
+        String attribute = "";
+
+        if(key.contains('.')) {
+            attribute = key.split('.')[1];
+            key = key.split('.')[0];
+        }
+        
         if(_private_variables.containsKey(key)) {
-            //print("found private variable " + key);
+            if(attribute == null) {
+                return _private_variables[key];
+            } else {
+                if(_private_variables[key] is Map) {
+                    for(MapEntry e in _private_variables[key].entries) {
+                        if(e.key == attribute) {
+                            return e.value;
+                        }
+                    }
+                    return null;
+                }
+            }
             return _private_variables[key];
         } else if(args.vars.containsKey(key)) {
-            //print("found argvar " + key);
+            if(attribute == null) {
+                return args.get(key);
+            } else {
+                if(args.get(key) is Map) {
+                    for(MapEntry e in args.get(key).entries) {
+                        if(e.key == attribute) {
+                            return e.value;
+                        }
+                    }
+                    return null;
+                }
+            }
             return args.get(key);
         } else if(_variables.containsKey(key)) {
             //print("found procvar " + key);
