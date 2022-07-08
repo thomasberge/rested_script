@@ -19,6 +19,7 @@ List<Function> functions = [
   test_template_comments,
   test_simpleif,
   test_mapvariable
+  //test_template_block
 ];
 
 main() async {
@@ -379,6 +380,18 @@ Future<bool> test_mapvariable() async {
     bugs = false;
   } else {
     print(">"+result.toString()+"<");
+  }
+  return bugs;
+}
+
+Future<bool> test_template_block() async {
+  bool bugs = true;
+  RestedScript restedscript = RestedScript(root: "/app/bin/pages/");
+  String result = await restedscript.createDocument("block.html");
+  if(result == "ninjaman") {
+    bugs = false;
+  } else {
+    print(result.toString());
   }
   return bugs;
 }

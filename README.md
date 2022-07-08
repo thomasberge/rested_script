@@ -113,7 +113,7 @@ Multi-line comments
 supported #} and they
 don't need {#to be }
 ```
-
+    
 ##### Templating - variables
 You can echo variables either passed as arguments in code or set within the templating by enclosing the variable name with double curly braces and a space. If the variable is not present or is null, a blank string will replace the statement.
 

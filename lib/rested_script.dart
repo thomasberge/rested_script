@@ -164,6 +164,7 @@ class RestedScript {
 
     // Templating
     document = await removeTemplateComments(_pid, document);
+    document = await templateBlock(_pid, document, root);
     document = await wrapDocument(_pid, document, root);
     document = await include(_pid, document);
     document = await ifConditions(_pid, document);

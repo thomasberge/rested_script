@@ -203,7 +203,143 @@ Future<String> echoVariables(int _pid, String data) async {
 }
 
 /*
- *    wrap, to be refactored
+ *    block - WIP
+      1. Make block nesting map
+      2. Tag all start/end blocks and extract content.
+      3. Replace content in blocks in reverse nesting order
+ */
+
+String extractBlockName(String data) {
+  StringTools cursor = StringTools(data);
+  cursor.selectFromTo("{% ", " %}");
+  String text = cursor.getSelection();
+  return text.substring(6);
+}
+
+// The nesting level is included in the block name, separated by a semicolon. This is so that nested
+// blocks are executed first.
+String collapseBlocks(int _pid, String data) {
+  StringTools cursor = StringTools(data);
+  var sortedKeys = pman.processes[_pid].blocks.keys.toList()..sort();
+  //for(MapEntry block in pman.processes[_pid].blocks.entries) {
+  //print("blocks:" + sortedKeys.toString());
+  //}
+  return data;
+}
+
+//String replaceBlock()
+Map<String, int> getBlockNesting(int _pid, String data) {
+  debug(_pid, "getBlockNestingMap()");
+  StringTools cursor = StringTools(data);
+
+  Map<String, int> blockNesting = {};
+  int loop = 0;
+  int level = 0;
+/*
+  while(cursor.moveTo('{% block')) {
+    cursor.selectFromTo("{% ", " %}", includeArguments: true);
+    blockName = extractBlockName(cursor.getSelection());
+
+    
+
+    cursor.selectFromTo("{% ", " %}", includeArguments: true);
+    blockName = extractBlockName(cursor.getSelection());
+    cursor.replaceSelection("{*" + blockName + "*}");
+    cursor.move(characters: ("{*" + blockName + "*}").length);
+    cursor.startSelection();
+
+    while(run) {
+      String element = cursor.moveToListElement(["{% block", "{% endblock %}"]);
+      if(element == "{% block") {
+        level++;
+        cursor.move();
+        //print("block -> " + level.toString());
+      } else if (element == "{% endblock %}") {
+        if(level == 0) {
+          cursor.stopSelection();
+          //print("VALUE OF " + blockName + "=" + cursor.getSelection() + "<<");
+          pman.processes[_pid].blocks[blockName] = cursor.getSelection();
+          cursor.selectFromTo("{% ", " %}", includeArguments: true);
+          cursor.replaceSelection("{" + blockName + "*}");
+          run = false;
+        } else {
+          //print("block <- " + level.toString());
+          level--;
+          cursor.move();
+        }
+      }
+
+      loop++;
+      if(loop > 100) {
+        print("Error, missing endblock statement.");
+        return data;
+      }
+    }
+    //print(".:. finished block .:.");
+    cursor.reset();
+  }
+
+  String temp = collapseBlocks(_pid, cursor.data);
+
+  return cursor.data;*/
+  return blockNesting;
+}
+
+Future<String> templateBlock(int _pid, String data, String root) async {
+  debug(_pid, "templateBlock()");
+  StringTools cursor = StringTools(data);
+
+  int loop = 0;
+  while(cursor.data.contains('{% block')) {
+    //print(".:. processing block .:.");
+    int level = 0;
+    String blockName = "";
+    bool run = true;
+
+    cursor.selectFromTo("{% ", " %}", includeArguments: true);
+    blockName = extractBlockName(cursor.getSelection());
+    cursor.replaceSelection("{*" + blockName + "*}");
+    cursor.move(characters: ("{*" + blockName + "*}").length);
+    cursor.startSelection();
+
+    while(run) {
+      String element = cursor.moveToListElement(["{% block", "{% endblock %}"]);
+      if(element == "{% block") {
+        level++;
+        cursor.move();
+        //print("block -> " + level.toString());
+      } else if (element == "{% endblock %}") {
+        if(level == 0) {
+          cursor.stopSelection();
+          //print("VALUE OF " + blockName + "=" + cursor.getSelection() + "<<");
+          pman.processes[_pid].blocks[blockName] = cursor.getSelection();
+          cursor.selectFromTo("{% ", " %}", includeArguments: true);
+          cursor.replaceSelection("{*/" + blockName + "*}");
+          run = false;
+        } else {
+          //print("block <- " + level.toString());
+          level--;
+          cursor.move();
+        }
+      }
+
+      loop++;
+      if(loop > 100) {
+        print("Error, missing endblock statement.");
+        return data;
+      }
+    }
+    //print(".:. finished block .:.");
+    cursor.reset();
+  }
+
+  String temp = collapseBlocks(_pid, cursor.data);
+
+  return cursor.data;
+}
+
+/*
+ *    wrap, to be refactored into block
  */
 
 Future<String> wrapDocument(int _pid, String data, String root) async {

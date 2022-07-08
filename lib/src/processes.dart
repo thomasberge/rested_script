@@ -31,8 +31,12 @@ class Process {
     List<String> strings = [];
 
     Map<String, dynamic> _variables = {};
-    //List<Map<String, dynamic>> _private_variables = [];
-    Map<String, dynamic> _private_variables = {};
+
+    int scope = 0;
+    List<Map<String, dynamic>> _private_variables = [{}];
+    
+    int extends_scope = 0;
+    Map<String, String> blocks = {};
 
     Process(this.args) {
         createdAt = DateTime.now();
@@ -52,12 +56,16 @@ class Process {
     }
 
     void set_private(String key, dynamic variable) {
-        _private_variables[key] = variable;
+        _private_variables[scope][key] = variable;
     }
 
-    void reset_private_variables(int nesting_id) {
-        // remember to make a way to create private variables depending on their nesting context
-        // so that only variables created in that context are deleted.
+    void scopeIn() {
+        scope = scope++;
+    }
+
+    void scopeOut() {
+        _private_variables[scope] = {};
+        scope = scope--;
     }
 
     dynamic get(String key) {
@@ -68,12 +76,12 @@ class Process {
             key = key.split('.')[0];
         }
         
-        if(_private_variables.containsKey(key)) {
+        if(_private_variables[scope].containsKey(key)) {
             if(attribute == null) {
-                return _private_variables[key];
+                return _private_variables[scope][key];
             } else {
-                if(_private_variables[key] is Map) {
-                    for(MapEntry e in _private_variables[key].entries) {
+                if(_private_variables[scope][key] is Map) {
+                    for(MapEntry e in _private_variables[scope][key].entries) {
                         if(e.key == attribute) {
                             return e.value;
                         }
@@ -81,7 +89,7 @@ class Process {
                     return null;
                 }
             }
-            return _private_variables[key];
+            return _private_variables[scope][key];
         } else if(args.vars.containsKey(key)) {
             if(attribute == null) {
                 return args.get(key);
