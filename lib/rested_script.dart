@@ -49,7 +49,10 @@ class CodeBlock {
 }
 
 class RestedScript {
-  RestedScript({this.root = "", bool debug = false}) {
+  String root;
+  List<String> directories;
+
+  RestedScript({this.root = "", this.directories = const [], bool debug = false}) {
     debugEnabled = debug;
   }
 
@@ -77,8 +80,6 @@ class RestedScript {
   /*
   *    END TEMPLATING FUNCTIONS
   */
-
-  String root;
 
   // Temp duplicate of createDocument but with no file reading capabilities.
   Future<String> stringToDoc(String data, {Arguments? args = null, bool debug = false}) async {
@@ -140,8 +141,18 @@ class RestedScript {
     debug(_pid, "parse()");
     if (filepath != "") {
       try {
-        File data = new File(root + filepath);
-        List<String> lines = data.readAsLinesSync(encoding: utf8);
+        List<String> lines = [];
+        if(File(root + filepath).existsSync()) {
+          File data = new File(root + filepath);
+          lines = data.readAsLinesSync(encoding: utf8);
+        } else {
+          for(String dir in directories) {
+            if(File(dir + filepath).existsSync()) {
+              File data = new File(dir + filepath);
+              lines = data.readAsLinesSync(encoding: utf8);
+            }
+          }
+        }
         return (await processLines(lines, _pid));
       } catch(e) {
         print(e.toString());

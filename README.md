@@ -16,11 +16,19 @@ You can then - relative to its root directory, pass it file paths to text files 
 String index_page = await rscript.createDocument("index.html");
 ```
 
-Alternatively you can leave a blank filepath reference and instead pass the data as a string.
+Alternatively you can use stringToDoc to pass the data as a string.
 
 ```dart
-String index_page = await rscript.createDocument("", data: 'Some data <?rs include("other_data.txt"); ?>');
+String index_page = await rscript.stringToDoc('Some data <?rs include("other_data.txt"); ?>');
 ```
+
+You can pass a list of secondary directories that will be used when restedscript are looking for files referenced in script. That means that you cannot use createDocument for files in these directories, but you can use include. For special use-cases where you want to separate script and content.
+
+```dart
+RestedScript rscript = RestedScript(root: "/app/bin/resources/", directories: ["/app/bin/common/"]);
+```
+
+
 
 ### By Example
 

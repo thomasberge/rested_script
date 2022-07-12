@@ -18,7 +18,8 @@ List<Function> functions = [
   test_template_include,
   test_template_comments,
   test_simpleif,
-  test_mapvariable
+  test_mapvariable,
+  test_directories
   //test_template_block
 ];
 
@@ -389,6 +390,18 @@ Future<bool> test_template_block() async {
   RestedScript restedscript = RestedScript(root: "/app/bin/pages/");
   String result = await restedscript.createDocument("block.html");
   if(result == "ninjaman") {
+    bugs = false;
+  } else {
+    print(result.toString());
+  }
+  return bugs;
+}
+
+Future<bool> test_directories() async {
+  bool bugs = true;
+  RestedScript restedscript = RestedScript(root: "/app/bin/pages/", directories: ["/app/bin/second/"]);
+  String result = await restedscript.createDocument("includesecond");
+  if(result == "afrom secondary directoryb") {
     bugs = false;
   } else {
     print(result.toString());
