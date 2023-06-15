@@ -44,11 +44,11 @@ Future<String> removeTemplateComments(int _pid, String data) async {
   debug(_pid, "ifConditions()");
   StringTools cursor = StringTools(data);
 
-  while(cursor.moveTo("{#")) {
+  while(cursor.find("{#")) {
     cursor.startSelection();
-    if(cursor.moveTo("#}")) {
-      cursor.move();
-      cursor.move();
+    if(cursor.find("#}")) {
+      cursor.next();
+      cursor.next();
       cursor.stopSelection();
       cursor.deleteSelection();
       cursor.reset();
@@ -66,7 +66,7 @@ String extractConditional(int _pid, String prefix, String data) {
   debug(_pid, "extractConditional()");
   StringTools cursor = StringTools(data);
   cursor.deleteCharacters(('{% ' + prefix + ' ').length);
-  cursor.moveTo(' %}');
+  cursor.find(' %}');
   cursor.deleteCharacters(' %}'.length);
   return cursor.data;
 }
@@ -82,7 +82,7 @@ Future<String> ifConditions(int _pid, String data) async {
   while(data.contains("{% if")) {
     StringTools cursor = new StringTools(data);
 
-    if(cursor.moveTo('{% if')) {
+    if(cursor.find('{% if')) {
 
       bool run = true;
       int level = 0;
@@ -92,7 +92,7 @@ Future<String> ifConditions(int _pid, String data) async {
 
       while(run) {
        
-        String element = cursor.moveToListElement(["{% if", "{% else %}", "{% endif %}"]);
+        String element = cursor.findOneOf(["{% if", "{% else %}", "{% endif %}"]);
 
         if(element == "{% if") {
           if(level == 0) {
@@ -102,7 +102,7 @@ Future<String> ifConditions(int _pid, String data) async {
             level++;
           } else {
             level++;
-            cursor.move();
+            cursor.next();
           }
 
         } else if(element == "{% else %}") {
@@ -115,7 +115,7 @@ Future<String> ifConditions(int _pid, String data) async {
             cursor.selectFromTo("{% ", " %}", includeArguments: true);
             cursor.replaceSelection("{%ELSE%}");
           } else {
-            cursor.move();
+            cursor.next();
           }
 
         // If we encounter an 'endif' we simply add the previous unclosed id to the end
@@ -127,7 +127,7 @@ Future<String> ifConditions(int _pid, String data) async {
             cursor.replaceSelection("{%STOP-IF%}");
             run = false;
           } else {
-            cursor.move();
+            cursor.next();
           }
 
         } else {
@@ -147,12 +147,12 @@ Future<String> ifConditions(int _pid, String data) async {
       if(keep) {
         cursor.reset();
         if(elsecounter==0) {
-          cursor.moveTo("{%START-IF%}");
+          cursor.find("{%START-IF%}");
           cursor.deleteCharacters("{%START-IF%}".length);
-          cursor.moveTo("{%STOP-IF%}");
+          cursor.find("{%STOP-IF%}");
           cursor.deleteCharacters("{%STOP-IF%}".length);
         } else {
-          cursor.moveTo("{%START-IF%}");
+          cursor.find("{%START-IF%}");
           cursor.deleteCharacters("{%START-IF%}".length);
           cursor.deleteFromTo("{%ELSE%}", "{%STOP-IF%}", includeArguments: true);
         }
@@ -160,7 +160,7 @@ Future<String> ifConditions(int _pid, String data) async {
         if(elsecounter>0) {
           cursor.reset();
           cursor.deleteFromTo("{%START-IF%}", "{%ELSE%}", includeArguments: true);
-          cursor.moveTo("{%STOP-IF%}");
+          cursor.find("{%STOP-IF%}");
           cursor.deleteCharacters("{%STOP-IF%}".length);
         } else {
           cursor.reset();
@@ -188,7 +188,7 @@ Future<String> templateDebugDump(_pid, document) async {
 
 Future<String> echoVariables(int _pid, String data) async {
   StringTools cursor = new StringTools(data);
-  while(cursor.moveTo('{{ ')) {
+  while(cursor.find('{{ ')) {
     cursor.selectFromTo('{{ ', ' }}', includeArguments: true);
     cursor.deleteEdgesOfSelection(characters: 3);
     String key = cursor.getSelection();
@@ -236,7 +236,7 @@ Map<String, int> getBlockNesting(int _pid, String data) {
   int loop = 0;
   int level = 0;
 /*
-  while(cursor.moveTo('{% block')) {
+  while(cursor.find('{% block')) {
     cursor.selectFromTo("{% ", " %}", includeArguments: true);
     blockName = extractBlockName(cursor.getSelection());
 
@@ -245,14 +245,14 @@ Map<String, int> getBlockNesting(int _pid, String data) {
     cursor.selectFromTo("{% ", " %}", includeArguments: true);
     blockName = extractBlockName(cursor.getSelection());
     cursor.replaceSelection("{*" + blockName + "*}");
-    cursor.move(characters: ("{*" + blockName + "*}").length);
+    cursor.next(characters: ("{*" + blockName + "*}").length);
     cursor.startSelection();
 
     while(run) {
       String element = cursor.moveToListElement(["{% block", "{% endblock %}"]);
       if(element == "{% block") {
         level++;
-        cursor.move();
+        cursor.next();
         //print("block -> " + level.toString());
       } else if (element == "{% endblock %}") {
         if(level == 0) {
@@ -265,7 +265,7 @@ Map<String, int> getBlockNesting(int _pid, String data) {
         } else {
           //print("block <- " + level.toString());
           level--;
-          cursor.move();
+          cursor.next();
         }
       }
 
@@ -299,14 +299,14 @@ Future<String> templateBlock(int _pid, String data, String root) async {
     cursor.selectFromTo("{% ", " %}", includeArguments: true);
     blockName = extractBlockName(cursor.getSelection());
     cursor.replaceSelection("{*" + blockName + "*}");
-    cursor.move(characters: ("{*" + blockName + "*}").length);
+    cursor.next(characters: ("{*" + blockName + "*}").length);
     cursor.startSelection();
 
     while(run) {
-      String element = cursor.moveToListElement(["{% block", "{% endblock %}"]);
+      String element = cursor.findOneOf(["{% block", "{% endblock %}"]);
       if(element == "{% block") {
         level++;
-        cursor.move();
+        cursor.next();
         //print("block -> " + level.toString());
       } else if (element == "{% endblock %}") {
         if(level == 0) {
@@ -319,7 +319,7 @@ Future<String> templateBlock(int _pid, String data, String root) async {
         } else {
           //print("block <- " + level.toString());
           level--;
-          cursor.move();
+          cursor.next();
         }
       }
 
@@ -348,10 +348,10 @@ Future<String> wrapDocument(int _pid, String data, String root) async {
 
     // Gets both arguments (file and content id) and deletes the wrap function call from
     // the document.
-    if(cursor.moveTo('{{wrap(')) {
+    if(cursor.find('{{wrap(')) {
       cursor.deleteCharacters('{{wrap('.length);
       cursor.startSelection();
-      cursor.moveTo(')}}');
+      cursor.find(')}}');
       cursor.stopSelection();
       String wrapArgs = cursor.getSelection();
       cursor.deleteCharacters(')}}'.length);
@@ -391,7 +391,7 @@ Future<String> wrapDocument(int _pid, String data, String root) async {
       // If the start of a forEach is found, select it and throw it into a new ST and get
       // the key to the list. Then delete the forEach, return to the previous position and 
       // start marking the block.
-      if (dparser.moveTo('{{foreach')) {
+      if (dparser.find('{{foreach')) {
         int prevPos = dparser.position;
         String listname = dparser.getFromTo('(', ')');
         dparser.position = prevPos;
@@ -399,7 +399,7 @@ Future<String> wrapDocument(int _pid, String data, String root) async {
         dparser.position = prevPos;
         dparser.startSelection();
 
-        if (dparser.moveTo('{{endforeach(' + listname + ')}}')) {
+        if (dparser.find('{{endforeach(' + listname + ')}}')) {
           dparser.deleteCharacters(('{{endforeach(' + listname + ')}}').length);
           dparser.stopSelection();
           block = dparser.getSelection();
@@ -436,7 +436,7 @@ Future<String> wrapDocument(int _pid, String data, String root) async {
             while (i < thelist.length) {
               String newblock = block.replaceAll('{{' + listname + '}}', thelist[i].toString());
               dparser.insertAtPosition(newblock);
-              dparser.move(characters: newblock.length);
+              dparser.next(characters: newblock.length);
               i++;
             }
           } else {    // if full-blown sheet zomg
@@ -452,7 +452,7 @@ Future<String> wrapDocument(int _pid, String data, String root) async {
                 }
               }
               dparser.insertAtPosition(newblock);
-              dparser.move(characters: newblock.length);
+              dparser.next(characters: newblock.length);
               i++;
             }
           }
@@ -483,11 +483,11 @@ Future<String> forin(int _pid, String data) async {
 
   StringTools cursor = StringTools(data);
 
-  while(cursor.moveTo("{% for ")) {
+  while(cursor.find("{% for ")) {
     cursor.startSelection();
-    cursor.moveTo("%}");
-    cursor.move();
-    cursor.move();
+    cursor.find("%}");
+    cursor.next();
+    cursor.next();
     cursor.stopSelection();
     String expression = cursor.getSelection();
     cursor.replaceSelection("{%START-FOR%}");
@@ -496,11 +496,11 @@ Future<String> forin(int _pid, String data) async {
     bool run = true;
 
     while(run) {
-      String element = cursor.moveToListElement(["{% for ", "{% endfor %}"]);
+      String element = cursor.findOneOf(["{% for ", "{% endfor %}"]);
 
       if(element == "{% for ") {
         level++;
-        cursor.move();
+        cursor.next();
       } else if(element == "{% endfor %}") {
         if(level == 0) {
           cursor.selectFromTo("{% ", " %}", includeArguments: true);
@@ -508,7 +508,7 @@ Future<String> forin(int _pid, String data) async {
           run = false;
         } else {
           level--;
-          cursor.move();
+          cursor.next();
         }
       } else {
         run = false;

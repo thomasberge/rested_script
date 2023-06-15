@@ -20,7 +20,7 @@ String removeComments(int _pid, List<String> lines) {
 
       StringTools cursor = StringTools(line);
 
-      String element = cursor.moveToListElement(stopAt);
+      String element = cursor.findOneOf(stopAt);
       while(element != "") {
         if(element == '<?rs') {
           rs = true;
@@ -39,8 +39,8 @@ String removeComments(int _pid, List<String> lines) {
           cursor.startSelection();
           commentOn = true;
         }
-        cursor.move();
-        element = cursor.moveToListElement(stopAt);
+        cursor.next();
+        element = cursor.findOneOf(stopAt);
         
         if(element == "") {
           if(commentOn) {

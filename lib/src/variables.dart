@@ -133,7 +133,7 @@ String getSum(String data) {
       }
     }
 
-    cursor.move();
+    cursor.next();
   }
 
   // Operations order:
@@ -153,7 +153,7 @@ String addAssumedMultiplication(String data) {
 
   StringTools cursor = StringTools(data);
   if(cursor.moveToRegex(startP, width: 2)) {
-    cursor.move();
+    cursor.next();
     cursor.insertAtPosition('*');
     //print(cursor.getFromPosition(characters: 2));
   }
@@ -161,7 +161,7 @@ String addAssumedMultiplication(String data) {
   cursor.reset();
 
   if(cursor.moveToRegex(endP, width: 2)) {
-    cursor.move();
+    cursor.next();
     cursor.insertAtPosition('*');    
     //print(cursor.getFromPosition(characters: 2));
   }
@@ -181,14 +181,14 @@ String collapseParentheses(String data) {
 
 
   while(run) {
-    String char = cursor.moveToListElement(patentheses);
+    String char = cursor.findOneOf(patentheses);
     if(char == '(') {
       lookingForClosing = true;
       cursor.startSelection();
-      cursor.move();
+      cursor.next();
     } else if(char == ')') {
       if(lookingForClosing) {
-        cursor.move();
+        cursor.next();
         cursor.stopSelection();
         cursor.deleteEdgesOfSelection();
         cursor.replaceSelection(getSum(cursor.getSelection()));
@@ -302,7 +302,7 @@ void initMap(int _pid, String data) {
 void initInt(int _pid, String data) {
   StringTools cursor = StringTools(data.substring("Int ".length));
 
-  if(cursor.moveTo('=')) {
+  if(cursor.find('=')) {
 
     String key = cursor.getAllBeforePosition().trim();
     if(keyFormat.hasMatch(key)) {
@@ -326,7 +326,7 @@ void initInt(int _pid, String data) {
 void updateInt(int _pid, String key, String data) {
   StringTools cursor = StringTools(data.substring("Int ".length));
 
-  if(cursor.moveTo('=')) {
+  if(cursor.find('=')) {
 
     if(keyFormat.hasMatch(key)) {
       String value = cursor.getAllAfterPosition().trim();
@@ -391,7 +391,7 @@ String replaceVariableNamesWithContent(int _pid, String data) {
 
 void initBool(int _pid, String data) {
   StringTools cursor = StringTools(data.substring("Bool ".length));
-  if(cursor.moveTo('=')) {
+  if(cursor.find('=')) {
 
     String key = cursor.getAllBeforePosition().trim();
     if(keyFormat.hasMatch(key)) {
@@ -413,7 +413,7 @@ void initBool(int _pid, String data) {
 void initString(int _pid, String data) {
   StringTools cursor = StringTools(data.substring("String ".length));
 
-  if(cursor.moveTo('=')) {
+  if(cursor.find('=')) {
     String key = cursor.getAllBeforePosition().trim();
     if(keyFormat.hasMatch(key)) {
       String value = cursor.getAllAfterPosition().trim().replaceAll(' ', '');
@@ -505,7 +505,7 @@ void initSheet(int _pid, String _data) {
     while(run) {
       cursor.startSelection();
 
-      if(cursor.moveTo(':')) {
+      if(cursor.find(':')) {
         cursor.stopSelection();
         String columnType = cursor.getSelection().trim();
 
@@ -513,7 +513,7 @@ void initSheet(int _pid, String _data) {
           cursor.selectFromTo('%&', '&%');
           String value = pman.processes[_pid].getString(int.parse(cursor.getSelection()));
           sheet.addColumn(columnType, value);
-          if(cursor.moveTo(',')) {
+          if(cursor.find(',')) {
             cursor.data = cursor.getAllAfterPosition();
             cursor.reset();
           }

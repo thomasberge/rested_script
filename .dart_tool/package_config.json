@@ -1,0 +1,20 @@
+{
+  "configVersion": 2,
+  "packages": [
+    {
+      "name": "string_tools",
+      "rootUri": "file:///Users/thomasberge/.pub-cache/git/string_tools-a204f0c8f89ffd624bd87982be7a897b70df795a/",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "rested_script",
+      "rootUri": "../",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    }
+  ],
+  "generated": "2023-06-15T05:39:22.359236Z",
+  "generator": "pub",
+  "generatorVersion": "2.18.6"
+}

@@ -43,7 +43,7 @@ void sheet_addRow(int _pid, String _data) {
   List<String> rowItems = [];
 
   cursor.startSelection();
-  cursor.moveTo(',');
+  cursor.find(',');
   cursor.stopSelection();
   String key = cursor.getSelection().trim();
   cursor.deleteSelection();
@@ -74,13 +74,13 @@ void sheet_addColumn(int _pid, String _data) {
   StringTools cursor = StringTools(_data);
   cursor.deleteEdges();
   cursor.startSelection();
-  cursor.moveTo(',');
+  cursor.find(',');
   cursor.stopSelection();
   String key = cursor.getSelection().trim();
 
   if(pman.processes[_pid].args.isVar(key)) {
     if(pman.processes[_pid].args.type(key) == "Sheet") {
-      cursor.move();
+      cursor.next();
       cursor.stopSelection();
       cursor.deleteSelection();
       cursor.reset();
@@ -88,10 +88,10 @@ void sheet_addColumn(int _pid, String _data) {
 
       String type = cursor.data.split(':')[0];
 
-      cursor.moveTo('"');
-      cursor.move();
+      cursor.find('"');
+      cursor.next();
       cursor.startSelection();
-      cursor.moveToNext('"');
+      cursor.findNext('"');
       cursor.stopSelection();
       String name = cursor.getSelection();
 

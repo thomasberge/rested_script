@@ -1,5 +1,6 @@
 name: rested_script
 version: 0.1.1
+publish_to: none
 description: >-
   A simple scripting language made for the Rested Web Framework.
 environment:
