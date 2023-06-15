@@ -64,12 +64,12 @@ class RestedScript {
     debug(_pid, "templace_include()");
     StringTools cursor = StringTools(data);
 
-    while(cursor.moveTo('{% include ')) {
+    while(cursor.find('{% include ')) {
       cursor.startSelection();
       String filepath = cursor.getFromTo("('", "')");
-      cursor.moveTo('%}');
-      cursor.move();
-      cursor.move();
+      cursor.find('%}');
+      cursor.next();
+      cursor.next();
       cursor.stopSelection();
       String processed_file = await parse(filepath, _pid);
       cursor.replaceSelection(processed_file);
@@ -279,10 +279,10 @@ class RestedScript {
 
     while (run) {
 
-      if (cursor.moveTo('<?rs')) {
+      if (cursor.find('<?rs')) {
         cursor.deleteCharacters(4);
         cursor.startSelection();
-        if (cursor.moveTo('?>')) {
+        if (cursor.find('?>')) {
           cursor.deleteCharacters(2);
           cursor.stopSelection();
 
@@ -365,10 +365,10 @@ class RestedScript {
 
     bool run = true;
     while(run) {
-      if(cursor.moveTo('"')) {
+      if(cursor.find('"')) {
         cursor.startSelection();
-        cursor.moveTo('"');
-        cursor.move();
+        cursor.find('"');
+        cursor.next();
         cursor.stopSelection();
         cursor.deleteSelection();
         cursor.reset();

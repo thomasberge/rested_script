@@ -108,7 +108,7 @@ class Arguments {
     StringTools cursor = new StringTools(path);
     bool run = cursor.data.contains("/");
     while (run) {
-      run = cursor.moveTo("/");
+      run = cursor.find("/");
     }
     cursor.deleteAllFromPosition();
     //print("path=" + path);
