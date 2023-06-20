@@ -3,7 +3,7 @@
   "packages": [
     {
       "name": "string_tools",
-      "rootUri": "file:///Users/thomasberge/.pub-cache/git/string_tools-2e609d8d8b6b6e2e1f817079b3e731fbb457cc62/",
+      "rootUri": "file:///Users/thomasberge/.pub-cache/git/string_tools-64a191e15602d7a1db0a4e887cb290acf9bf4b20/",
       "packageUri": "lib/",
       "languageVersion": "2.12"
     },
@@ -14,7 +14,7 @@
       "languageVersion": "2.12"
     }
   ],
-  "generated": "2023-06-15T07:39:42.735596Z",
+  "generated": "2023-06-20T05:22:42.270325Z",
   "generator": "pub",
   "generatorVersion": "2.18.6"
 }
